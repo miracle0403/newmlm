@@ -1,3 +1,5 @@
+'use strict';
+const nodemailer = require('nodemailer');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -40,20 +42,13 @@ var options = {
 var sessionStore = new MySQLStore(options);
   
 app.use(session({
-  secret: 'hfgdhfjdhfvg',
+  secret: 'keybaby',
   resave: false,
   store: sessionStore,
   saveUninitialized: false,
   /**cookie:
     #secure: true**/
   }));
-
-  // express connect flash
-app.use(flash());
-app.use(function (req, res, next) {
-  res.locals.messages = require('express-messages')(req, res);
-  next();
-});
 
   //passport
 app.use(passport.initialize());

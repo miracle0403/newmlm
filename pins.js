@@ -28,3 +28,50 @@ SELECT node.user FROM prestarter AS node, prestarter AS parent WHERE node.lft BE
 SELECT * FROM prestarter AS node, prestarter AS parent, prestarter_tree AS main WHERE (a IS null or b is null or c is null) AND node.lft BETWEEN parent.lft AND parent.rgt AND parent.user = 24 ORDER BY node.lft
 
 SELECT @user := user FROM prestarter AS node, prestarter AS parent, prestarter_tree AS main WHERE (a IS null or b is null or c is null) AND node.lft BETWEEN parent.lft AND parent.rgt AND parent.user = 24 ORDER BY node.lft
+
+SELECT parent.user, count(user) 
+FROM prestarter AS node join
+  prestarter AS parent
+  on parent.lft < node.lft AND parent.rgt > node.rgt
+GROUP BY parent.user;
+
+SELECT @user := node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth FROM prestarter AS node,
+prestarter AS parent,
+prestarter AS sub_parent, 
+  (SELECT node.user, (COUNT(parent.user) - 1) AS depth FROM prestarter AS node, prestarter AS parent
+   WHERE node.lft BETWEEN parent.lft AND parent.rgt
+   AND node.user BETWEEN parent.lft AND parent.rgt
+   AND node.user = @user
+   GROUP BY node.user
+   ORDER BY node.lft)AS sub_tree WHERE 
+   node.lft BETWEEN parent.lft AND parent.rgt
+   AND
+   sub_parent.user = sub_tree.user
+   GROUP BY node.user 
+   HAVING depth <= 1
+   ORDER BY node.lft;
+   DELIMITER //
+CREATE PROCEDURE getdepth(child INT(11))
+BEGIN
+
+SELECT node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth
+FROM prestarter AS node,
+        prestarter AS parent,
+        prestarter AS sub_parent,
+        (
+                SELECT node.user, (COUNT(parent.user) - 1) AS depth
+                FROM prestarter AS node,
+                prestarter AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                AND node.user = child
+                GROUP BY node.user
+                ORDER BY node.lft
+        )AS sub_tree
+WHERE node.lft BETWEEN parent.lft AND parent.rgt
+        AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+        AND sub_parent.user = sub_tree.user
+GROUP BY node.user
+HAVING depth > 0
+ORDER BY node.lft;
+END //
+DELIMITER ;

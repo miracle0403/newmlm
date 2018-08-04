@@ -12,8 +12,10 @@
         <div class="container">
 <!--         what is row -->
             <div class="row tim-row">
-              <H5>{{title}}</H5>
+              <H5><b>{{title}}</b></H5>
+			  
 <form method ="POST" action ="/register">
+<br>
 <div class="form-group">
     <label for="fullname">Full Name</label>
     <input type="text" class="form-control" 
@@ -39,9 +41,7 @@ never share your email with anyone else.</small>
   <label for="countrycode">Country Code</label>
   <select name="code" class="form-control" value="Select Country Code" id="code">
     <option></option>
-    {{#each country}}
-      <option>{{code}}</option>
-    {{/each}}
+      <option>+234</option>
   </select>
 </div>
 <div class="form-group">

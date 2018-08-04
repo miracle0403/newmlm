@@ -1,3 +1,5 @@
+'use strict';
+const nodemailer = require('nodemailer');
 var express = require('express');
 var passport = require('passport');
 var securePin = require('secure-pin');
@@ -19,17 +21,6 @@ router.get('/', function(req, res, next) {
 
 // get join
 router.get('/join', authentificationMiddleware(), function (req, res, next){
-  db.query('select lft, rgt from prestarter WHERE lft > ?',[1], function(err, results,fields){
-    if (err) throw err;
-    var test = results;
-    var i = 0;
-    while(i < results.length){
-    console.log(i);
-    console.log(test[i]);
-    console.log(results[i]);
-    i++;
-    }
-  });
   res.render('join', {title: "JOIN MATRIX"});
 });
 
@@ -45,23 +36,18 @@ router.get('/fastteams', function (req, res, next) {
 
 //test flash
 router.get('/addFlash', function (req, res) {
-  req.flash('info', 'Flash Message Added');
-  res.redirect('/');
+  req.flash('info', 'Flash Message Added'); 
+  res.redirect('/'); 
 });
 
 //get register with referral link
 router.get('/register/:username', function(req, res, next) {
   const db = require('../db.js');
   var username = req.params.username;
-  // get the list of supported countries
-  db.query('SELECT * FROM countries_supported', function(err, results, fields){
-    if (err) throw err;
-    var country = results;
     //get the sponsor name on the registration page
     db.query('SELECT username FROM user WHERE username = ?', [username],
     function(err, results, fields){
       if (err) throw err;
-
       if (results.length === 0){
         res.render('register')
         console.log('not a valid sponsor name');
@@ -70,21 +56,15 @@ router.get('/register/:username', function(req, res, next) {
         console.log(sponsor)
         if (sponsor){
           console.log(JSON.stringify(sponsor));
-          res.render('register', { title: 'REGISTRATION', country: country, sponsor: sponsor });
+          res.render('register', { title: 'REGISTRATION', sponsor: sponsor });
         }     
       }
     });  
-  });
 });
 
 //register get request
 router.get('/register', function(req, res, next) {
-  // get the list of supported countries
-  db.query('SELECT * FROM countries_supported', function(err, results, fields){
-    if (err) throw err;
-    var country = results;
-    res.render('register', { title: 'REGISTRATION', country: country });
-  });
+    res.render('register', { title: 'REGISTRATION'});
 });
 
 //get login
@@ -171,7 +151,7 @@ router.post('/register', function(req, res, next) {
   req.checkBody('code', 'Country Code must not be empty.').notEmpty();
   req.checkBody('pass1', 'Password must match').equals(req.body.pass2);
   req.checkBody('phone', 'Phone Number must be ten characters').len(10);
-  //req.checkBody('pass1', 'Password must have upper case, lower case, symbol, and number').matches(/^(?=,*\d)(?=, *[a-z])(?=, *[A-Z])(?!, [^a-zA-Z0-9]).{8,}$/, "i")
+  //req.checkBody('pass1', 'Password must have upper case, lower case, symbol, and number').matches(/*(?=,*\d)(?=, *[a-z])(?=, *[A-Z])(?!, [^a-zA-Z0-9]).{8,}$/, "i")
  
   var errors = req.validationErrors();
 
@@ -185,21 +165,25 @@ router.post('/register', function(req, res, next) {
     var password = req.body.pass1;
     var cpass = req.body.pass2;
     var email = req.body.email;
-    var sponsor = req.body.sponsor;
     var fullname = req.body.fullname;
     var code = req.body.code;
     var phone = req.body.phone;
+	var sponsor = req.body.sponsor;
 
     var db = require('../db.js');
     
     //check if sponsor is valid
-    db.query('SELECT username FROM user WHERE username = ?', [sponsor], function(err, results, fields){
+    db.query('SELECT username, full_name, email FROM user WHERE username = ?', [sponsor], function(err, results, fields){
       if (err) throw err;
       if(results.length===0){
-        var sponsor = "This Sponsor does not exist"
+        var spone = "This Sponsor does not exist"
         console.log(sponsor);
-        res.render('register', {title: "REGISTRATION FAILED", sponsor: sponsor});
+        res.render('register', {title: "REGISTRATION FAILED", spone: sponsor});
       }else{
+		  var sponmail ={
+			email: results[0].email,
+			name: results[0].full_name
+		  }
         db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
           if (err) throw err;
           if(results.length===1){
@@ -215,10 +199,10 @@ router.post('/register', function(req, res, next) {
                 res.render('register', {title: "REGISTRATION FAILED", email: error});
               }else{
                 bcrypt.hash(password, saltRounds, function(err, hash){
-                  db.query('INSERT INTO user (sponsor, full_name, phone, code, username, email, password, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 0], function(error, result, fields){
+                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 0], function(error, result, fields){
                     if (error) throw error;
                     console.log(hash);
-                    console.log(results);
+                    console.log(results); 
                     res.render('register', {title: "REGISTRATION SUCCESSFUL"});  
                   });
                 });
@@ -378,64 +362,11 @@ router.post('/join',  function (req, res, next) {
           if(user_pin !== null){
             console.log('pin has been  used already!');
             res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!'});
-          }
+          }else{
           //check if the user has joined the matrix before now
-          db.query('SELECT user FROM stage3 WHERE user = ?', [currentUser], function(err, results, fields){
+          db.query('SELECT user_id FROM pin WHERE user_id = ?', [currentUser], function(err, results, fields){
             if (err) throw err;
-            if(results.length === 1){
-              var user_enter = results[0].user;
-              //check if the third stage is filled by the user
-              db.query('SELECT user FROM stage3 WHERE user = ?', [currentUser], function(err, results, fields){
-                if (err) throw err;
-                if(results.length === 0){
-                  res.render('join', {title: 'SORRY YOU CANNOT ENTER THE MATRIX NOW'});
-                }
-                if(results.length > 0){
-                  // check where the user in empty in the jumper level
-                  db.query('SELECT caa, cab, cac, cba, cbb, cbc, cca, ccb, ccc FROM jumper WHERE (caa = null OR cab = null OR cac = null OR cba = null OR cbc = null OR cca= null OR ccb = null OR ccc = null) and user = ?', [currentUser], function(err, results, fields){
-                    if (err) throw err;
-                    console.log(results);
-                    if(results.length > 1){
-                      res.render('join', {title: 'SORRY YOU CANNOT ENTER THE MATRIX NOW'});
-                    }
-                    if(results.length === 0){
-                      db.query('UPDATE pin SET user_id = ? WHERE serial = ?', [currentUser, serial], function(err, results,fields){
-                        if (err) throw err;
-                        console.log(results);
-                        //selects the sponsor
-                        db.query('SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
-                          if (err) throw err;
-                          var sponsor = results[0].sponsor;
-                          console.log('sponsor name is:' + sponsor);
-                          //get the sponsor id
-                          db.query('SELECT user_id FROM user WHERE username = ?', [sponsor], function(err, results, fields){
-                            if (err) throw err;
-                            var id = results[0].user_id;
-                            console.log('sponsor id is ' + id);
-                            //check if the user is already a paid member 
-                            db.query('SELECT paid FROM user WHERE user_id = ?', [id], function(err, results, fields){
-                              if (err) throw err; 
-                              console.log(results)
-                              var paid = results[0].paid;  
-                              console.log('the paid value is ' + paid);
-							  db.query('SELECT sponsor FROM user WHERE user_id = ?', [id], function(err, results, fields){
-								if (err) throw err;
-							    var spon = results[0].sponsor;
-								db.query('SELECT user_id FROM user WHERE username = ?', [spon], function(err, results, fields){
-								  if (err) throw err;
-								  var sponId = results[0].user_id;
-								});
-							  });
-                            });
-                          });
-                        });
-                      });
-                    }
-                  });
-                }
-              });
-            }
-            //now for the normal matrix
+			//now for the normal matrix
             if(results.length === 0){
               //update the pin
               db.query('UPDATE pin SET user_id = ? WHERE serial = ?', [currentUser, serial], function(err, results,fields){
@@ -462,10 +393,10 @@ router.post('/join',  function (req, res, next) {
                         var paid = results[0].paid;  
                         console.log('the paid value is ' + paid);
                         if(paid == "yes"){
-							db.query('INSERT INTO pin_entrance(user, amount) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
+							db.query('INSERT INTO pin_entrance(user, entered_matrix) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
                                 if (err) throw err;
 							  //check if the direct sposor is null
-							  db.query('SELECT * FROM prestarter_tree WHERE user = ?', [id], function(err, results, fields){
+							  db.query('SELECT * FROM feeder_tree WHERE user = ?', [id], function(err, results, fields){
 								if (err) throw err;
 								var first = {
 								  a: results[0].a,
@@ -475,49 +406,55 @@ router.post('/join',  function (req, res, next) {
 								//if a is null
 								if(first.a === null && first.b === null){
 								  //inserts into the prestarter table
-								  db.query('INSERT INTO prestarter_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
+								  db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
 									if (err) throw err;
 									//update into the sponsor set
-									db.query('UPDATE prestarter_tree SET a = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
-									  if (err) throw err;
-									  // complete the incentives section
-									  db.query('INSERT INTO incentives(user, company_fee) VALUES(?, ?)', [currentUser, 475], function(err, results,fields){
-										if(err) throw err;
+									db.query('UPDATE feeder_tree SET a = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
+									  if(err) throw err;
 										//call the procedure for adding
 										db.query('CALL leafadd(?,?)', [id, currentUser], function(err, results, fields){
 											if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
-										});
-									  });
+										}); 
 									});
 								  });
 								}
 								// if a is not null
 								if(first.a !== null && first.b === null){
 									//inserts into the prestarter table
-									db.query('INSERT INTO prestarter_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
+									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
 									  if (err) throw err;
 									  //update into the sponsor set
-									  db.query('UPDATE prestarter_tree SET b = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
+									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
 										if (err) throw err;
 										// complete the incentives section
-										db.query('INSERT INTO incentives(user, company_fee) VALUES(?, ?)', [currentUser, 475], function(err, results,fields){
-										  if(err) throw err;
-										  db.query('CALL leafadd(?,?)', [id, currentUser], function(err, results, fields){
+										db.query('CALL leafadd(?,?)', [id, currentUser], function(err, results, fields){
 											if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
 										  });
-										});
 									  });
 									});	
 								}
-								//if both a and b is not null
+								//fix in the spillover
 								if(first.a !== null && first.b !== null){
-									db.query('')
-								}
+									//get the depth and user
+									db.query('CALL firstspill(?)', [id], function(err, results, fields){
+										if (err) throw err;
+										 var i = 0;
+										 while (i < results.length){
+											 i++
+										 }
+										 var levels = {
+											 depth: results[i].depth,
+											 user: results[i].user
+										 }
+										 console.log(levels);
+										  
+									});
+								}								
 							  });
-                          });
-                        }
+							});
+					    } 
                       });
                     });
                   });
@@ -525,6 +462,7 @@ router.post('/join',  function (req, res, next) {
               });
             }
           });
+		  }  
         }
       });
     }
