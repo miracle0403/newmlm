@@ -8,6 +8,8 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var expressValidator = require('express-validator');
 var mysql = require('mysql');
+var hbs = require('hbs');
+var fs = require('fs');
 
 //Authentication packages
 var bcrypt = require('bcrypt');
@@ -26,6 +28,20 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+
+//get new partials
+var messageTemplate = fs.readFileSync(__dirname + '/views/message.hbs', 'utf8');
+hbs.registerPartial('message', messageTemplate); 
+
+var mainTemplate = fs.readFileSync(__dirname + '/views/main.hbs', 'utf8');
+hbs.registerPartial('main', mainTemplate); 
+
+var dashboardhTemplate = fs.readFileSync(__dirname + '/views/spageh.hbs', 'utf8');
+hbs.registerPartial('spageh', dashboardhTemplate); 
+
+var dashboardfTemplate = fs.readFileSync(__dirname + '/views/spagef.hbs', 'utf8');
+hbs.registerPartial('spagef', headerTemplate); 
+
 
 app.use(logger('dev'));
 app.use(express.json());
