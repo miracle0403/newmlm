@@ -1,7 +1,7 @@
 'use strict';
 const nodemailer = require('nodemailer');
 var express = require('express');
-var passport = require('passport');
+var passport = require('passport'); 
 var securePin = require('secure-pin');
 var charSet = new securePin.CharSet();
 charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
@@ -16,7 +16,7 @@ const saltRounds = 15;
 router.get('/', function(req, res, next) {
   console.log(req.user)
   console.log(req.isAuthenticated())
-  res.render('index', { title: 'SWIFT EMPOWER' });
+  res.render('index', { title: 'AKALINE GLOBAL SERVICES' });
 });
 
 // get join
@@ -82,11 +82,11 @@ router.get('/referrals', authentificationMiddleware(), function(req, res, next) 
     db.query('SELECT username FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
       if (err) throw err;
       //get the referral link to home page
-      var website = "localhost:3002/";
+      //var website = "localhost:3002/";
       var user = results[0].username;
-      var reg = "register/";
-      var link = website + user;
-      var register = website + reg + user
+      var reg = "/register/";
+      var link = user;
+      var register = reg + user;
       db.query('SELECT * FROM user WHERE sponsor = ?', [user], function(err, results, fields){
         if (err) throw err;
         console.log(results)

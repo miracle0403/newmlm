@@ -1,41 +1,45 @@
-<div class="main">
-    <div class="section">
-        <div class="container">
-<!--         what is row -->
-            <div class="row tim-row">
-                <h2>Your sponsor is {{sponsor}} and your referral link is <a href="{{link}}">{{link}} </a> <br/> link to your registration page is <a href="{{register}}">{{register}}</a> </h2>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="main">
-    <div class="section">
-        <div class="container">
-<!--         what is row -->
-            <div class="row tim-row">    
-                <table>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone Number</th>
-                        <th>Username</th>
-                        <th>Status</th>
-                        <th>Date of joining</th>
-                    </tr>
-                    {{#if referrals}}
-                    {{#each referrals}}
-                    <tr>
-                        <td>{{name}}</td>
-                        <td>{{email}}</td>
-                        <td>{{code}}{{phone}}</td>
-                        <td>{{username}}</td>
-                        <td>{{status}}</td>
-                        <td>{{date_joined}}</td>
-                    </tr>
-                    {{/each}}
-                    {{/if}}
-                    </table>
-            </div>
-        </div>
-    </div>
-</div>
+{{> spageh}}
+{{> nav}}
+<div class="col-md-12">
+                        <div class="card">
+                            <div class="header">
+                                </div>
+                            <div class="content">
+                                <h4 class="title">Your sponsor is {{sponsor}}</h4><br><br>
+                                <h6 class="category">Link to the registration page is <a href="{{register}}">akahlineglobalservices{{register}}</a></h6>
+								<br>
+								<br>
+								<br>
+								<div class="content table-responsive table-full-width">
+                                <table class="table table-striped">
+								<thead>
+                                        <th>Name</th>
+										<th>Email</th>
+										<th>Phone Number</th>
+										<th>Username</th>
+										<th>Status</th>
+										<th>Date of joining</th>
+                                    </thead>
+									{{#if referrals}}
+									{{#each referrals}}
+									<tr>
+										<td>{{name}}</td>
+										<td>{{email}}</td>
+										<td>{{code}}{{phone}}</td>
+										<td>{{username}}</td>
+										<td>{{status}}</td>
+										<td>{{date_joined}}</td>
+									</tr>
+									{{/each}}
+									{{/if}}
+									</table>
+								</div>
+                                    <hr>
+                                    <div class="stats">
+                                        <i class="ti-reload"></i> Updated 3 minutes ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>

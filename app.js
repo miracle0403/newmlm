@@ -45,6 +45,8 @@ hbs.registerPartial('spageh', dashboardhTemplate);
 var dashboardfTemplate = fs.readFileSync(__dirname + '/views/spagef.hbs', 'utf8');
 hbs.registerPartial('spagef', dashboardfTemplate); 
 
+var navTemplate = fs.readFileSync(__dirname + '/views/nav.hbs', 'utf8');
+hbs.registerPartial('nav', navTemplate); 
 
 app.use(logger('dev'));
 app.use(express.json());
