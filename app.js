@@ -30,17 +30,20 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
 //get new partials
-var messageTemplate = fs.readFileSync(__dirname + '/views/message.hbs', 'utf8');
+var messageTemplate = fs.readFileSync(__dirname + '/views/messages.hbs', 'utf8');
 hbs.registerPartial('message', messageTemplate); 
 
-var mainTemplate = fs.readFileSync(__dirname + '/views/main.hbs', 'utf8');
-hbs.registerPartial('main', mainTemplate); 
+var mainhTemplate = fs.readFileSync(__dirname + '/views/mainh.hbs', 'utf8');
+hbs.registerPartial('mainh', mainhTemplate); 
+
+var mainfTemplate = fs.readFileSync(__dirname + '/views/mainf.hbs', 'utf8');
+hbs.registerPartial('mainf', mainfTemplate); 
 
 var dashboardhTemplate = fs.readFileSync(__dirname + '/views/spageh.hbs', 'utf8');
 hbs.registerPartial('spageh', dashboardhTemplate); 
 
 var dashboardfTemplate = fs.readFileSync(__dirname + '/views/spagef.hbs', 'utf8');
-hbs.registerPartial('spagef', headerTemplate); 
+hbs.registerPartial('spagef', dashboardfTemplate); 
 
 
 app.use(logger('dev'));
