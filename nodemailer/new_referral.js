@@ -1,9 +1,6 @@
-exports.verifymail = function verifymail(x){
-	
-    
+exports.alertsponsor = function mail(x){
 	var nodemailer = require('nodemailer');
-	
-	var transporter = nodemailer.createTransport({
+	var transporter = nodemailer.createTransporr({
 		host: 'server206.web-hosting.com',
 		port: '26',
 		secure: false,
@@ -15,13 +12,13 @@ exports.verifymail = function verifymail(x){
 	var mailOptions = {
 		from: 'noreply@swiftcircle',
 		to: x,
-		subject: 'Password Reset',
-		html: 'hi'
+		subject: 'You have a new Referral!',
+		html: ''
 	}
-	transporter.sendMail(mailOptions, function(error, info){
+	transporter.sendMail(mailOptions, function(error, info)){
 		if (error) {
 			return console.log(error);
 		}
-		console.log('Message Sent')
-	});
+		console.log('Message Sent' + info)
+	}
 }

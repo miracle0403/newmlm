@@ -1,5 +1,7 @@
 'use strict';
 const nodemailer = require('nodemailer');
+//var resete = require('../nodemailer/passwordreset.js');
+var verify = require('../nodemailer/verification.js');
 var express = require('express');
 var passport = require('passport'); 
 var securePin = require('secure-pin');
@@ -24,6 +26,116 @@ router.get('/join', authentificationMiddleware(), function (req, res, next){
   res.render('join', {title: "JOIN MATRIX"});
 });
 
+// get password reset
+router.get('/reset/:username/:email/:password/:code',  function (req, res, next){
+  var username = req.params.username;
+  var email = req.params.email;
+  var password = req.params.password;
+  var username = req.params.username;
+  var code = req.params.code;
+  //get username
+    db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
+      if (err) throw err;
+      if (results.length === 0){
+        res.render('nullreset', {title: 'Invalid link'});
+		console.log('not a valid username');
+	  }else{
+		  db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
+			if (err) throw err;
+			if (results.length === 0){
+				res.render('nullreset', {title: 'Invalid link'});
+				console.log('not a valid username');
+			}else{
+				db.query('SELECT password FROM user WHERE password = ?', [password], function(err, results, fields){
+					if (err) throw err;
+					if (results.length === 0){
+						res.render('nullreset', {title: 'Invalid link'});
+					}else{
+						db.query('SELECT code FROM reset WHERE code = ?', [code], function(err, results, fields){
+							if (err) throw err;
+							if (results.length === 0){
+								res.render('nullreset', {title: 'Invalid link'});
+							}else{
+								db.query('SELECT date_entered FROM reset WHERE code = ?', [code], function(err, results, fields){
+									if (err) throw err;
+									var date = results[0];
+									var minutes = new Date()
+									if (date + 15 >= minutes){
+										res.render('nullreset', {title: 'Link Expired!'});
+									}else{
+										res.redirect('changepassword');
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+		  });
+	  }
+	});
+});
+
+// get password verify
+router.get('/verify/:username/:email/:password/:code',  function (req, res, next){
+  var username = req.params.username;
+  var email = req.params.email;
+  var password = req.params.password;
+  var username = req.params.username;
+  var code = req.params.code;
+  //get username
+    db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
+      if (err) throw err;
+      if (results.length === 0){
+        res.render('nullreset', {title: 'Invalid link'});
+		console.log('not a valid username');
+	  }else{
+		  db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
+			if (err) throw err;
+			if (results.length === 0){
+				res.render('nullreset', {title: 'Invalid link'});
+				console.log('not a valid username');
+			}else{
+				db.query('SELECT password FROM user WHERE password = ?', [password], function(err, results, fields){
+					if (err) throw err;
+					if (results.length === 0){
+						res.render('nullreset', {title: 'Invalid link'});
+					}else{
+						db.query('SELECT code FROM verify WHERE code = ?', [code], function(err, results, fields){
+							if (err) throw err;
+							if (results.length === 0){
+								res.render('nullreset', {title: 'Invalid link'});
+							}else{
+								db.query('SELECT date_entered FROM verify WHERE code = ?', [code], function(err, results, fields){
+									if (err) throw err;
+									var date = results[0];
+									var minutes = new Date()
+									if (date + 15 >= minutes){
+										res.render('nullreset', {title: 'Link Expired!'});
+									}else{
+										res.redirect('changepassword');
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+		  });
+	  }
+	});
+});
+
+// get password reset
+router.get('/passwordreset',  function (req, res, next){
+  res.render('passwordreset', {title: "PASSWORD RESET"});
+});
+// get verification
+router.get('/verify',  function (req, res, next){
+  res.render('verify', {title: "Verify Email"});
+});
+
+
 // get terms and conditions
 router.get('/terms', function (req, res, next) {
   res.render('terms', {title: "TERMS AND CONDITIONS"});
@@ -34,11 +146,7 @@ router.get('/fastteams', function (req, res, next) {
   res.render('fastteams', {title: "FASTEST TEAMS"});
 });
 
-//test flash
-router.get('/addFlash', function (req, res) {
-  req.flash('info', 'Flash Message Added'); 
-  res.redirect('/'); 
-});
+
 
 //get register with referral link
 router.get('/register/:username', function(req, res, next) {
@@ -201,9 +309,10 @@ router.post('/register', function(req, res, next) {
                 bcrypt.hash(password, saltRounds, function(err, hash){
                   db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 0], function(error, result, fields){
                     if (error) throw error;
+					verify.mail(email);
                     console.log(hash);
                     console.log(results); 
-                    res.render('register', {title: "REGISTRATION SUCCESSFUL"});  
+                    res.render('register', {title: 'SUCCESS', username: username});  
                   });
                 });
               }
@@ -228,11 +337,12 @@ passport.deserializeUser(function(user_id, done){
 function pin(){
   var charSet = new securePin.CharSet();
   charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
-  securePin.generatePin(10, function(pin){
-    console.log("Pin: "+ pin);
-    securePin.generateString(10, charSet, function(str){
+  securePin.generatePin(16, function(pin){
+    console.log("Pin: AGS"+ pin);
+    securePin.generateString(16, charSet, function(str){
       console.log(str);
-      bcrypt.hash(pin, saltRounds, function(err, hash){
+	  var pinn = 'AGS' + pin;
+      bcrypt.hash(pinn, saltRounds, function(err, hash){
         db.query('INSERT INTO pin (pin, serial) VALUES (?, ?)', [hash, str], function(error, results, fields){
           if (error) throw error;
           //console.log(results)
@@ -468,4 +578,51 @@ router.post('/join',  function (req, res, next) {
     }
   });
 });
+//reset post request
+router.post('/passwordreset', function(req, res, next) {
+	req.checkBody('username', 'Full Name must be between 8 to 25 characters').len(8,25);
+	req.checkBody('email', 'Email must be between 8 to 25 characters').len(8,25);
+	var errors = req.validationErrors();
+
+  if (errors) { 
+    console.log(JSON.stringify(errors));
+    res.render('passwordreset', { title: 'FAILED', errors: errors});
+
+  }
+  else {
+    var username = req.body.username;
+    var email = req.body.email;
+	db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
+		if (err) throw err;
+		if(results.length = 0){
+			res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
+		}else{
+			db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
+				if (err) throw err;
+				if(results.length = 0){
+					res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
+				}else{
+					res.render('passwordreset', {title: 'SUCCESS', check: 'Check your mail!'});
+				}
+			});
+		}
+	});
+  }
+});
+function resete(email, user, ){
+	var charSet = new securePin.CharSet();
+	charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
+	securePin.generateString(10, charSet, function(str){
+      console.log(str);
+      bcrypt.hash(str, saltRounds, function(err, hash){
+        db.query('INSERT INTO reset (user, str, date_entered) VALUES (?, ?, ?)', [user, hash, str], function(error, results, fields){
+          if (error) throw error;
+          //console.log(results)
+        });
+      });
+    });
+	resete.passwordreset(email)
+}
+var ma = 'mify1@yahoo.com';
+verify.verifymail(ma)
 module.exports = router;

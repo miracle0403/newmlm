@@ -18,12 +18,14 @@ var passport = require('passport');
 var localStrategy = require('passport-local'),Strategy;
 var session = require('express-session');
 var MySQLStore = require ('express-mysql-session')(session);
-var flash = require('connect-flash');
+var flash = require('express-flash');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var db = require('./db.js');
 
 var app = express();
+
+app.use(flash());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -47,6 +49,8 @@ hbs.registerPartial('spagef', dashboardfTemplate);
 
 var navTemplate = fs.readFileSync(__dirname + '/views/nav.hbs', 'utf8');
 hbs.registerPartial('nav', navTemplate); 
+
+
 
 app.use(logger('dev'));
 app.use(express.json());

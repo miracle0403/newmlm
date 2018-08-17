@@ -3,6 +3,8 @@ CREATE TABLE `company` (
 	`amount` INT(11) NOT NULL,
 	`date` DATETIME NOT NULL
 )
+
+6551375120 fidelity
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB()
 ;
