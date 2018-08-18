@@ -609,7 +609,18 @@ router.post('/passwordreset', function(req, res, next) {
 	});
   }
 });
-function resete(email, user, ){
+function timerreset(x){
+db.query( 'SELECT LAST_INSERT_ID() FROM reset' , function ( err, results, fields ){
+if ( err ) throw err;
+var x  =  results[0];
+
+db.query( 'UPDATE reset SET status = ? WHERE user  = ?', ['expired', x], function ( err, results, fields ){
+if ( err ) throw err;
+});
+});
+}
+
+function rese(email, user, ){
 	var charSet = new securePin.CharSet();
 	charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
 	securePin.generateString(10, charSet, function(str){
@@ -617,6 +628,7 @@ function resete(email, user, ){
       bcrypt.hash(str, saltRounds, function(err, hash){
         db.query('INSERT INTO reset (user, str, date_entered) VALUES (?, ?, ?)', [user, hash, str], function(error, results, fields){
           if (error) throw error;
+          setTimeout( timerreset, 900000 )
           //console.log(results)
         });
       });

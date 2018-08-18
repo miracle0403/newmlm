@@ -1,24 +1,35 @@
-exports.alertsponsor = function mail(x){
+exports.newreferral= function newreferral(x){
 	var nodemailer = require('nodemailer');
-	var transporter = nodemailer.createTransporr({
-		host: 'server206.web-hosting.com',
-		port: '26',
-		secure: false,
-		auth: {
-			user: 'noreply@swiftcircle.website',
-			pass: 'Miracle1994'
-		}
-	});
+	var hbs = require('nodemailer-express-handlebars');
+	var transporter = nodemailer.createTransport({ 
+		host: 'server206.web-hosting.com', 
+		port: 26, 
+		secure: false, // true for 465, false for other ports
+		auth: { 
+			user: 'noreply@swiftcircle.website', // generated ethereal 
+			pass:  'Miracle1994' // generated ethereal password } }); 
+		  }
+    });
+transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' })); 
+
+//the message properties
 	var mailOptions = {
-		from: 'noreply@swiftcircle',
-		to: x,
-		subject: 'You have a new Referral!',
-		html: ''
+  		from: 'noreply@swiftcircle.website',
+  		to: x,
+  		subject: 'You Have A New REferral!',
+		template: 'emailreset'
+  		
 	}
-	transporter.sendMail(mailOptions, function(error, info)){
+	
+// send the mail
+	transporter.sendMail(mailOptions, function(error, info) { 
 		if (error) {
-			return console.log(error);
-		}
-		console.log('Message Sent' + info)
-	}
+			return console.log(error); 
+		} 
+		console.log('Message sent: %s', info.messageId);
+		//console.log(module.exports.email);
+  	});
 }
+
+
+

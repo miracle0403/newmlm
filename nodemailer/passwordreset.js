@@ -1,30 +1,36 @@
-exports.passwordreset = function mail(x){
-	var fs = require('fs');
-    var path = require('path');
-    var hbs = require('handlebars');
+exports.passwordreset= function passwordreset(x){
 	var nodemailer = require('nodemailer');
-	var source = fs.readFileSync(path.join(__dirname, 'emailreset.hbs'), 'utf8');
-	// Create email generator
-	var template = hbs.compile(source);
-	var transporter = nodemailer.createTransport({
-		host: 'server206.web-hosting.com',
-		port: '26',
-		secure: false,
-		auth: {
-			user: 'noreply@swiftcircle.website',
-			pass: 'Miracle1994'
-		}
-	});
+	var hbs = require('nodemailer-express-handlebars');
+	var transporter = nodemailer.createTransport({ 
+		host: 'server206.web-hosting.com', 
+		port: 26, 
+		secure: false, // true for 465, false for other ports
+		auth: { 
+			user: 'noreply@swiftcircle.website', // generated ethereal 
+			pass:  'Miracle1994' // generated ethereal password } }); 
+		  }
+    });
+transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' })); 
+
+//the message properties
 	var mailOptions = {
-		from: 'noreply@swiftcircle',
-		to: x,
-		subject: 'Password Reset',
-		html: template(locals)
+  		from: 'noreply@swiftcircle.website',
+  		to: x,
+  		subject: 'Password Reset',
+		template: 'emailreset'
+  		
 	}
-	transporter.sendMail(mailOptions, function(error, info){
+	
+// send the mail
+	transporter.sendMail(mailOptions, function(error, info) { 
 		if (error) {
-			return console.log(error);
-		}
-		console.log('Message Sent')
-	});
+			return console.log(error); 
+		} 
+		console.log('Message sent: %s', info.messageId);
+		//console.log(module.exports.email);
+  	});
 }
+
+
+
+
