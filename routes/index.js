@@ -550,15 +550,55 @@ router.post('/join',  function (req, res, next) {
 									//get the depth and user
 									db.query('CALL firstspill(?)', [id], function(err, results, fields){
 										if (err) throw err;
-										 var i = 0;
-										 while (i < results.length){
-											 i++
+										 var depth = results[0].depth;
+										 db.query( 'CALL secondspill( ? )', [id], function ( err, results, fields ){
+										 var pick1 = {
+										 	user: results[0].user,
+										 	depth: results[0].depth,
+										 	amount: results[0].amount
 										 }
-										 var levels = {
-											 depth: results[i].depth,
-											 user: results[i].user
+										 if( depth === pick1.depth ){
+										 //start with a
+										 pick.amount += 1;
+										 //inserts into the prestarter table
+									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[pick1.user, currentUser], function(err, results, fields){
+									  if (err) throw err;
+									  //update into the sponsor set
+									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, pick1.user], function(err, results, fields){
+										if (err) throw err;
+										// complete the incentives section
+										db.query('CALL leafadd(?,?)', [pick1.user, currentUser], function(err, results, fields){
+											if (err) throw err;
+											res.render('join', {title: 'Successful Entrance'});
+											});
+											});
+											});
 										 }
-										 console.log(levels);
+										 if( depth !== pick1.depth ){
+										 //get it in b
+										 db.query( 'CALL secondspill( ? )', [id], function ( err, results, fields ){
+										 var pick2 = {
+										 	user: results[0].user,
+										 	depth: results[0].depth,
+										 	amount: results[0].amount
+										 }
+										 pick2.amount += 1;
+										 //inserts into the prestarter table
+									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[pick2.user, currentUser], function(err, results, fields){
+									  if (err) throw err;
+									  //update into the sponsor set
+									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, pick2.user], function(err, results, fields){
+										if (err) throw err;
+										// complete the incentives section
+										db.query('CALL leafadd(?,?)', [pick2.user, currentUser], function(err, results, fields){
+											if (err) throw err;
+											res.render('join', {title: 'Successful Entrance'});
+											});
+											});
+											});
+										 });
+										 }
+										 });
 										  
 									});
 								}								
@@ -620,21 +660,35 @@ if ( err ) throw err;
 });
 }
 
-function rese(email, user, ){
-	var charSet = new securePin.CharSet();
-	charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
-	securePin.generateString(10, charSet, function(str){
-      console.log(str);
-      bcrypt.hash(str, saltRounds, function(err, hash){
-        db.query('INSERT INTO reset (user, str, date_entered) VALUES (?, ?, ?)', [user, hash, str], function(error, results, fields){
-          if (error) throw error;
-          setTimeout( timerreset, 900000 )
-          //console.log(results)
-        });
-      });
-    });
-	resete.passwordreset(email)
+
+function fillup(x, ){
+	db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[x], function ( err, results, fields ){
+	if( err ) throw err;
+	var firstfillup = {
+		a: results[0].a,
+		b: results[0].b
+		user: results[0].user
+	}
+	db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[firstfillup.a], function ( err, results, fields ){
+	if( err ) throw err;
+	var afill = {
+		a: results[0].a,
+		b: results[0].b
+	}
+	db.query( 'UPDATE feeder_tree SET aa  = ?, ab = ? WHERE user  = ?', [afill.a, afill.b, x], function ( err, results, fields ){
+		if ( err ) throw err;
+		db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[firstfillup.b], function ( err, results, fields ){
+	if( err ) throw err;
+	var bfill = {
+		a: results[0].a,
+		b: results[0].b
+	}
+	db.query( 'UPDATE feeder_tree SET ba  = ?, bb = ? WHERE user  = ?', [bfill.a, bfill.b, x], function ( err, results, fields ){
+		if ( err ) throw err;
+		});
+	});
+	});
+	});
+	});
 }
-var ma = 'mify1@yahoo.com';
-verify.verifymail(ma)
 module.exports = router;
