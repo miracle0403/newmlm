@@ -539,7 +539,7 @@ router.post('/join',  function (req, res, next) {
 									  db.query('UPDATE feeder_tree SET a = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
 										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										db.query('CALL leafadd(?,?,?)', [id, id, currentUser], function(err, results, fields){
 										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
 										});
@@ -551,7 +551,7 @@ router.post('/join',  function (req, res, next) {
 									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
 										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										db.query('CALL leafadd(?,?,?)', [id, id, currentUser], function(err, results, fields){
 										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
 										});
@@ -563,7 +563,7 @@ router.post('/join',  function (req, res, next) {
 									  db.query('UPDATE feeder_tree SET c = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
 										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										db.query('CALL leafadd(?,?,?)', [id, id, currentUser], function(err, results, fields){
 										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
 										});
@@ -681,7 +681,7 @@ router.post('/join',  function (req, res, next) {
 																			//inserts into the a of the user
 																			db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  				if (err) throw err;
-																		//add procedure
+																				//add procedure
 																				db.query('CALL stage1in(?,?,?)',[sponid, stage1b.user, id], function(err, results, fields){
 																					if (err) throw err;
 																					res.render('join', {title: 'Successful Entrance'});
@@ -725,7 +725,7 @@ router.post('/join',  function (req, res, next) {
 																			//inserts into the a of the user
 																			db.query('UPDATE stage1_tree SET d = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  				if (err) throw err;
-																		//add procedure
+																				//add procedure
 																				db.query('CALL stage1in(?,?,?)',[sponid, stage1d.user, id], function(err, results, fields){
 																					if (err) throw err;
 																					res.render('join', {title: 'Successful Entrance'});
@@ -735,7 +735,30 @@ router.post('/join',  function (req, res, next) {
 																	});
 																}
 																//if stage 1 is filled up
-																if (stage1.aa === null && stage1.ab === null && stage1.ac === null && stage1.ad === null && stage1.ba === null && stage1.bb === null)
+																if (stage1.aa !== null && stage1.ab !== null && stage1.ac !== null && stage1.ad !== null && stage1.ba !== null && stage1.bb !== null && stage1.bc !== null && stage1.bd !== null && stage1.ca !== null && stage1.cb !== null && stage1.cc !== null && stage1.cd !== null && stage1.da !== null && stage1.db !== null && stage1.dc !== null && stage1.dd !== null){
+																	// chech if the sponsor is in stage 2
+																	db.query('SELECT * FROM stage2_tree WHERE user = ?', [id], function(err, results, fields){
+																		if (err) throw err;
+																		var stage2 = {
+																		  a: results[0].a,
+																		  b: results[0].b,
+																		  c: results[0].c,
+																		  d: results[0].d
+																		}
+																			//if a is null
+																		if(stage2.a === null && stage2.b === null && stage2.c === null && stage2.d === null){
+																		 //update into the sponsor set
+																		  db.query('UPDATE stage2_tree SET a = ? WHERE user = ?', [id, sponid], function(err, results, fields){
+																			if(err) throw err;
+																			//call the procedure for adding
+																			db.query('CALL stage2try(?,?,?)', [sponid, sponid, id], function(err, results, fields){
+																			  if (err) throw err;
+																				res.render('join', {title: 'Successful Entrance'});
+																			});
+																		  });
+																		}
+																	});	
+																}
 															});
 														});
 												  });
