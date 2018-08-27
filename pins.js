@@ -120,6 +120,113 @@ ORDER BY depth;
 END //
 DELIMITER ;
 
+//call b for feeder// call procedure to get the depth of the feeder
+DELIMITER //
+CREATE PROCEDURE getdepth1(child INT(11))
+BEGIN
+SELECT node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth
+FROM feeder AS node,
+        feeder AS parent,
+        feeder AS sub_parent,
+        (
+                SELECT node.user, (COUNT(parent.user) - 1) AS depth
+                FROM feeder AS node,
+                feeder AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                AND node.user = child
+                GROUP BY node.user
+                ORDER BY node.lft
+        )AS sub_tree
+WHERE node.amount = 0 AND node.lft BETWEEN parent.lft AND parent.rgt
+        AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+        AND sub_parent.user = sub_tree.user
+GROUP BY node.user
+HAVING depth > 0
+ORDER BY depth;
+END //
+DELIMITER ;
+
+//call the <2
+// call procedure to get the depth of the feeder
+DELIMITER //
+CREATE PROCEDURE getdepth2(child INT(11))
+BEGIN
+SELECT node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth
+FROM feeder AS node,
+        feeder AS parent,
+        feeder AS sub_parent,
+        (
+                SELECT node.user, (COUNT(parent.user) - 1) AS depth
+                FROM feeder AS node,
+                feeder AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                AND node.user = child
+                GROUP BY node.user
+                ORDER BY node.lft
+        )AS sub_tree
+WHERE node.amount = 1 AND node.lft BETWEEN parent.lft AND parent.rgt
+        AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+        AND sub_parent.user = sub_tree.user
+GROUP BY node.user
+HAVING depth > 0
+ORDER BY depth;
+END //
+DELIMITER ;
+
+// call the  = 2
+// call procedure to get the depth of the feeder
+DELIMITER //
+CREATE PROCEDURE getdepth3(child INT(11))
+BEGIN
+SELECT node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth
+FROM feeder AS node,
+        feeder AS parent,
+        feeder AS sub_parent,
+        (
+                SELECT node.user, (COUNT(parent.user) - 1) AS depth
+                FROM feeder AS node,
+                feeder AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                AND node.user = child
+                GROUP BY node.user
+                ORDER BY node.lft
+        )AS sub_tree
+WHERE node.amount 2 AND node.lft BETWEEN parent.lft AND parent.rgt
+        AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+        AND sub_parent.user = sub_tree.user
+GROUP BY node.user
+HAVING depth > 0
+ORDER BY depth;
+END //
+DELIMITER ;
+
+//call feeder for = 3
+// call the  = 2
+// call procedure to get the depth of the feeder
+DELIMITER //
+CREATE PROCEDURE getdepth4(child INT(11))
+BEGIN
+SELECT node.user, (COUNT(parent.user) - (sub_tree.depth + 1)) AS depth
+FROM feeder AS node,
+        feeder AS parent,
+        feeder AS sub_parent,
+        (
+                SELECT node.user, (COUNT(parent.user) - 1) AS depth
+                FROM feeder AS node,
+                feeder AS parent
+                WHERE node.lft BETWEEN parent.lft AND parent.rgt
+                AND node.user = child
+                GROUP BY node.user
+                ORDER BY node.lft
+        )AS sub_tree
+WHERE node.amount 3 AND node.lft BETWEEN parent.lft AND parent.rgt
+        AND node.lft BETWEEN sub_parent.lft AND sub_parent.rgt
+        AND sub_parent.user = sub_tree.user
+GROUP BY node.user
+HAVING depth > 0
+ORDER BY depth;
+END //
+DELIMITER ;
 
 // call procedure to get the depth of the stage 1   
 DELIMITER //
