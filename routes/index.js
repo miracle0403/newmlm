@@ -677,12 +677,12 @@ router.post('/join',  function (req, res, next) {
 																			user: results[0].user,
 																			depth: results[0].depth
 																		}
-																		if(stage1b.depth === stage1.depth){
+																		if(stage1b.depth === stage1depth){
 																			//inserts into the a of the user
 																			db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  				if (err) throw err;
 																		//add procedure
-																				db.query('CALL stage1in(?,?,?)',[sponid, firstspill.user, id], function(err, results, fields){
+																				db.query('CALL stage1in(?,?,?)',[sponid, stage1b.user, id], function(err, results, fields){
 																					if (err) throw err;
 																					res.render('join', {title: 'Successful Entrance'});
 																				});
@@ -690,6 +690,52 @@ router.post('/join',  function (req, res, next) {
 																		}
 																	});
 																}
+																	//if the b is filled
+																//check if the user is the lowest depth.
+																if(stage1b.depth !== stage1depth){
+																	db.query('CALL stage14thspill (?)', [sponid], function(err, results, fields){
+																		if (err) throw err; 
+																		var stage1c = {
+																			user: results[0].user,
+																			depth: results[0].depth
+																		}
+																		if(stage1c.depth === stage1depth){
+																			//inserts into the a of the user
+																			db.query('UPDATE stage1_tree SET c = ? WHERE user = ?', [id, sponid], function (err, results, fields){
+																  				if (err) throw err;
+																		//add procedure
+																				db.query('CALL stage1in(?,?,?)',[sponid, stage1c.user, id], function(err, results, fields){
+																					if (err) throw err;
+																					res.render('join', {title: 'Successful Entrance'});
+																				});
+																			});
+																		}
+																	});
+																}
+																	//if the a is filled
+																//check if the user is the lowest depth.
+																if(stage1c.depth !== stage1depth){
+																	db.query('CALL stage15thspill (?)', [sponid], function(err, results, fields){
+																		if (err) throw err; 
+																		var stage1d = {
+																			user: results[0].user,
+																			depth: results[0].depth
+																		}
+																		if(stage1d.depth === stage1.depth){
+																			//inserts into the a of the user
+																			db.query('UPDATE stage1_tree SET d = ? WHERE user = ?', [id, sponid], function (err, results, fields){
+																  				if (err) throw err;
+																		//add procedure
+																				db.query('CALL stage1in(?,?,?)',[sponid, stage1d.user, id], function(err, results, fields){
+																					if (err) throw err;
+																					res.render('join', {title: 'Successful Entrance'});
+																				});
+																			});
+																		}
+																	});
+																}
+																//if stage 1 is filled up
+																if (stage1.aa === null && stage1.ab === null && stage1.ac === null && stage1.ad === null && stage1.ba === null && stage1.bb === null)
 															});
 														});
 												  });
