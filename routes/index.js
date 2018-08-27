@@ -502,502 +502,159 @@ router.post('/join',  function (req, res, next) {
                     var id = results[0].user_id;
                     console.log('sponsor id is ' + id);
                        //select sponsor of the sponsor
-                db.query('SELECT sponsor FROM user WHERE user_id = ?', [id], function(err, results, fields){
-                  if (err) throw err;
-                  var sponsorer = results[0].sponsor;
-                  console.log('sponsor name is:' + sponsorer);
-                  //get the sponsor id
-                  db.query('SELECT user_id FROM user WHERE username = ?', [sponsorer], function(err, results, fields){
-                    if (err) throw err;
-                    var sponid = results[0].user_id;
-                    console.log('sponsor id is ' + sponid);
-                    //change user to a paid member
-                    db.query('UPDATE user SET paid = ? WHERE user_id = ?', ["yes", currentUser], function(err, results,fields){
-                      if (err) throw err;
-                      console.log(results);
-                      //check if the user is already a paid member 
-                      db.query('SELECT paid FROM user WHERE user_id = ?', [id], function(err, results, fields){
-                        if (err) throw err; 
-                        console.log(results)
-                        var paid = results[0].paid;  
-                        console.log('the paid value is ' + paid);
-                        if(paid == "yes"){
-							db.query('INSERT INTO pin_entrance(user, entered_matrix) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
-                                if (err) throw err;
-							  //check if the direct sposor is null
-							  db.query('SELECT * FROM feeder_tree WHERE user = ?', [id], function(err, results, fields){
+					db.query('SELECT sponsor FROM user WHERE user_id = ?', [id], function(err, results, fields){
+					  if (err) throw err;
+					  var sponsorer = results[0].sponsor;
+					  console.log('sponsor name is:' + sponsorer);
+					  //get the sponsor id
+					  db.query('SELECT user_id FROM user WHERE username = ?', [sponsorer], function(err, results, fields){
+						if (err) throw err;
+						var sponid = results[0].user_id;
+						console.log('sponsor id is ' + sponid);
+						//change user to a paid member
+						db.query('UPDATE user SET paid = ? WHERE user_id = ?', ["yes", currentUser], function(err, results,fields){
+						  if (err) throw err;
+						  console.log(results);
+						  //check if the user is already a paid member 
+						  db.query('SELECT paid FROM user WHERE user_id = ?', [id], function(err, results, fields){
+							if (err) throw err; 
+							console.log(results)
+							var paid = results[0].paid;  
+							console.log('the paid value is ' + paid);
+							if(paid == "yes"){
+								db.query('INSERT INTO pin_entrance(user, entered_matrix) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
 								if (err) throw err;
-								var first = {
-								  a: results[0].a,
-								  b: results[0].b,
-								  aa: results[0].aa,
-								  ab: results[0].ab,
-								  ba: results[0].ba,
-								  bb: results[0].bb,
-								  aaa: results[0].aaa,
-								  aab: results[0].aab,
-								  aba: results[0].aba,
-								  abb: results[0].abb,
-								  baa: results[0].baa,
-								  bab: results[0].bab,
-								  bba: results[0].bba,
-								  bbb: results[0].bbb,
-								  aaaa: results[0].aaaa,
-								  aaab: results[0].aaab,
-								  aaba: results[0].aaba,
-								  aabb: results[0].aabb,
-								  abaa: results[0].abaa,
-								  abab: results[0].abab,
-								  abba: results[0].abba,
-								  abbb: results[0].aabb,
-								  baaa: results[0].baaa,
-								  baab: results[0].baab,
-								  baba: results[0].baba,
-								  babb: results[0].babb,
-								  bbaa: results[0].bbaa,
-								  bbab: results[0].bbab,
-								  bbba: results[0].bbba,
-								  bbbb: results[0].bbbb
-								} 
-								//if a is null
-								if(first.a === null && first.b === null){
-								  //inserts into the prestarter table
-								  db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
+								//check if the direct sposor is null
+								  db.query('SELECT * FROM feeder_tree WHERE user = ?', [id], function(err, results, fields){
 									if (err) throw err;
-									//update into the sponsor set
-									db.query('UPDATE feeder_tree SET a = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
-									  if(err) throw err;
+									var first = {
+									  a: results[0].a,
+									  b: results[0].b,
+									  c: results[0].c,
+									  d: results[0].d
+									}
+										//if a is null
+									if(first.a === null && first.b === null && first.c === null && first.d === null){
+									 //update into the sponsor set
+									  db.query('UPDATE feeder_tree SET a = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
+										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL leafadd(?,?)', [id, currentUser], function(err, results, fields){
-											if (err) throw err;
+										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								  });
-								}
-								// if a is not null
-								if(first.a !== null && first.b === null){
-									//inserts into the prestarter table
-									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[id, currentUser], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
+										});
+									  });
+									}	
+									//if b is null
+									if(first.a !== null && first.b === null && first.c === null && first.d === null){
+									 //update into the sponsor set
 									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL leafadd(?,?)', [id, currentUser], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-										  });
-									  });
-									});	
-								}
-								//fix in the spillover
-								if(first.a !== null && first.b !== null){
-									//get the depth and user
-									db.query('CALL firstspill(?)', [id], function(err, results, fields){
-										if (err) throw err;
-										 var depth = results[0].depth;
-										 db.query( 'CALL secondspill( ? )', [id], function ( err, results, fields ){
-										 var pick1 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 if( depth === pick1.depth ){
-										 //start with a
-										 pick.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[pick1.user, currentUser], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, pick1.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL leafadd(?,?)', [pick1.user, currentUser], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 }
-										 if( depth !== pick1.depth ){
-										 //get it in b
-										 db.query( 'CALL secondspill( ? )', [id], function ( err, results, fields ){
-										 var pick2 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 pick2.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO feeder_tree(sponsor, user) VALUES(?,?)',[pick2.user, currentUser], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE feeder_tree SET b = ? WHERE user = ?', [currentUser, pick2.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL leafadd(?,?)', [pick2.user, currentUser], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 });
-										 }
-										 //start the second matrix.
-										 if( first.aaaa !== null && first.aaab !== null && first.aaba !== null && first.aabb !== null && first.abaa !== null && first.abab !== null && first.abba !== null && first.abbb !== null && first.baaa !== null && first.baab !== null && first.baba !== null && first.babb !== null && first.bbaa !== null && first.bbab !== null && first.bbba !== null && first.bbbb !== null ){
-										//query to add 4k to the user
-										db.query('INSERT INTO earnings(user, amount) VALUES(?,?)',[id, 4500], function(err, results, fields){
-									  if (err) throw err;
-									  //insert into the stage 1 tree
-									  db.query('INSERT INTO stage1_tree(sponsor, user) VALUES(?,?)',[sponid, id], function(err, results, fields){
-									if (err) throw err;
-									//check if the direct sposor is null
-							  db.query('SELECT * FROM stage1_tree WHERE user = ?', [sponid], function(err, results, fields){
-								if (err) throw err;
-								var second = {
-								  a: results[0].a,
-								  b: results[0].b,
-								  aa: results[0].aa,
-								  ab: results[0].ab,
-								  ba: results[0].ba,
-								  bb: results[0].bb,
-								  aaa: results[0].aaa,
-								  aab: results[0].aab,
-								  aba: results[0].aba,
-								  abb: results[0].abb,
-								  baa: results[0].baa,
-								  bab: results[0].bab,
-								  bba: results[0].bba,
-								  bbb: results[0].bbb
-								 }
-								 //a and b is null
-								if ( second.a === null && second.b === null ){
-								//get it in a
-								db.query('UPDATE stage1_tree SET a = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
+										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL secondleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
+										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//a is not null
-								if ( second.a !== null && second.b === null ){
-								//get it in a
-								db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
-										//call the procedure for adding
-										db.query('CALL secondleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//start the spillover
-								if(first.a !== null && first.b !== null){
-									//get the depth and user
-									db.query('CALL stage1firstspill(?)', [sponid], function(err, results, fields){
-										if (err) throw err;
-										 var stage1depth = results[0].depth;
-										 db.query( 'CALL stage1secondspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage1pick1 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 if( stage1depth === stage1pick1.depth ){
-										 //start with a
-										 stage1pick1.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage1_tree(sponsor, user) VALUES(?,?)',[stage1pick1.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, stage1pick1.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL secondleafadd(?,?)', [stage1pick1.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 }
-										 if( stage1depth !== stage1pick1.depth ){
-										 //get it in b
-										 db.query( 'CALL secondspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage1pick2 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 stage1pick2.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage1_tree(sponsor, user) VALUES(?,?)',[stage1pick2.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, stage1pick2.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL secondleafadd(?,?)', [stage1pick2.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 });
-										 }
-							});
-									});
+										});
 									  });
-										 }
-										 if( second.aaa !== null && second.aab !== null && second.aba !== null && second.abb !== null && second.baa !== null && second.bab !== null && second.bba !== null && second.bbb !== null){
-										 //selects the user to add the money to
-										 db.query( 'SELECT user, amount FROM earnings WHERE user  = ( ? )', [id], function ( err, results, fields ){
-									if ( err )	 throw err;
-									stage1 = {
-										user: results[0].user,
-										amount: results[0].amount
 									}
-									stage1.amount += 15000
-										//query to add 4k to the user
-										db.query('UPDATE earnings SET amount  = ? WHERE user = ?',[stage1.amount, id], function(err, results, fields){
-									  if (err) throw err;
-									  //insert into the stage 1 tree
-									  db.query('INSERT INTO stage2_tree(sponsor, user) VALUES(?,?)',[sponid, id], function(err, results, fields){
-									if (err) throw err;
-									//check if the direct sposor is null
-							  db.query('SELECT * FROM stage2_tree WHERE user = ?', [sponid], function(err, results, fields){
-								if (err) throw err;
-								var third = {
-								  a: results[0].a,
-								  b: results[0].b,
-								  aa: results[0].aa,
-								  ab: results[0].ab,
-								  ba: results[0].ba,
-								  bb: results[0].bb,
-								  aaa: results[0].aaa,
-								  aab: results[0].aab,
-								  aba: results[0].aba,
-								  abb: results[0].abb,
-								  baa: results[0].baa,
-								  bab: results[0].bab,
-								  bba: results[0].bba,
-								  bbb: results[0].bbb
-								 }
-								 //a and b is null
-								if ( third.a === null && third.b === null ){
-								//get it in a
-								db.query('UPDATE stage2_tree SET a = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
+									//if c is null
+									if(first.a !== null && first.b !== null && first.c === null && first.d === null){
+									 //update into the sponsor set
+									  db.query('UPDATE feeder_tree SET c = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
+										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL thirdleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
+										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										  if (err) throw err;
 											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//a is not null
-								if ( third.a !== null && third.b === null ){
-								//get it in a
-								db.query('UPDATE stage2_tree SET b = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
-										//call the procedure for adding
-										db.query('CALL thirdleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//start the spillover
-								if(third.a !== null && third.b !== null){
-									//get the depth and user
-									db.query('CALL stage2firstspill(?)', [sponid], function(err, results, fields){
-										if (err) throw err;
-										 var stage2depth = results[0].depth;
-										 db.query( 'CALL stage2secondspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage2pick1 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 if( stage2depth === stage2pick1.depth ){
-										 //start with a
-										 stage2pick1.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage2_tree(sponsor, user) VALUES(?,?)',[stage2pick1.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage2_tree SET b = ? WHERE user = ?', [id, stage2pick1.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL thirdleafadd(?,?)', [stage2pick1.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 }
-										 if( stage2depth !== stage2pick1.depth ){
-										 
-										 //get it in b
-										 db.query( 'CALL thirdspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage2pick2 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 stage2pick2.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage2_tree(sponsor, user) VALUES(?,?)',[stage2pick2.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage2_tree SET b = ? WHERE user = ?', [id, stage2pick2.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL thirdleafadd(?,?)', [stage2pick2.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 });
-										 }
-							});
-									});
+										});
 									  });
-										 }
-										 if( third.aaa !== null && third.aab !== null && third.aba !== null && third.abb !== null && third.baa !== null && third.bab !== null && third.bba !== null && thirdd.bbb !== null){
-										 //get the amount and add up
-										 db.query( 'SELECT user, amount FROM earnings WHERE user  = ( ? )', [id], function ( err, results, fields ){
-									if ( err )	 throw err;
-									stage2 = {
-										user: results[0].user,
-										amount: results[0].amount
 									}
-									stage2.amount += 30000
-										//query to add 4k to the user
-										db.query('UPDATE earnings SET amount  = ? WHERE user = ?',[stage2.amount, id], function(err, results, fields){
-									  if (err) throw err;
-									  //insert into the stage 1 tree
-									  db.query('INSERT INTO stage3_tree(sponsor, user) VALUES(?,?)',[sponid, id], function(err, results, fields){
-									if (err) throw err;
-									//check if the direct sposor is null
-							  db.query('SELECT * FROM stage3_tree WHERE user = ?', [sponid], function(err, results, fields){
-								if (err) throw err;
-								var fourth = {
-								  a: results[0].a,
-								  b: results[0].b,
-								  aa: results[0].aa,
-								  ab: results[0].ab,
-								  ba: results[0].ba,
-								  bb: results[0].bb,
-								  aaa: results[0].aaa,
-								  aab: results[0].aab,
-								  aba: results[0].aba,
-								  abb: results[0].abb,
-								  baa: results[0].baa,
-								  bab: results[0].bab,
-								  bba: results[0].bba,
-								  bbb: results[0].bbb
-								 }
-								 //a and b is null
-								if ( fourth.a === null && fourth.b === null ){
-								//get it in a
-								db.query('UPDATE stage3_tree SET a = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
+									//if d is null
+									if(first.a !== null && first.b !== null && first.c !== null && first.d === null){
+									 //update into the sponsor set
+									  db.query('UPDATE feeder_tree SET d = ? WHERE user = ?', [currentUser, id], function(err, results, fields){
+										if(err) throw err;
 										//call the procedure for adding
-										db.query('CALL fourthleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//a is not null
-								if ( fourth.a !== null && fourth.b === null ){
-								//get it in a
-								db.query('UPDATE stage2_tree SET b = ? WHERE user = ?', [ id, sponid], function(err, results, fields){
-									  if(err) throw err;
-										//call the procedure for adding
-										db.query('CALL fourthleafadd(?,?)', [sponid, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-										}); 
-									});
-								}
-								//start the spillover
-								if(fourth.a !== null && fourth.b !== null){
-									//get the depth and user
-									db.query('CALL stage3firstspill(?)', [sponid], function(err, results, fields){
-										if (err) throw err;
-										 var stage2depth = results[0].depth;
-										 db.query( 'CALL stage3secondspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage3pick1 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 if( stage3depth === stage3pick1.depth ){
-										 //start with a
-										 stage3pick1.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage3_tree(sponsor, user) VALUES(?,?)',[stage3pick1.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage3_tree SET b = ? WHERE user = ?', [id, stage3pick1.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL fourthleafadd(?,?)', [stage3pick1.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 }
-										 if( stage3depth !== stage3pick1.depth ){
-										 
-										 //get it in b
-										 db.query( 'CALL fourthspill( ? )', [sponid], function ( err, results, fields ){
-										 var stage3pick2 = {
-										 	user: results[0].user,
-										 	depth: results[0].depth,
-										 	amount: results[0].amount
-										 }
-										 stage3pick2.amount += 1;
-										 //inserts into the prestarter table
-									db.query('INSERT INTO stage3_tree(sponsor, user) VALUES(?,?)',[stage3pick2.user, id], function(err, results, fields){
-									  if (err) throw err;
-									  //update into the sponsor set
-									  db.query('UPDATE stage3_tree SET b = ? WHERE user = ?', [id, stage2pick2.user], function(err, results, fields){
-										if (err) throw err;
-										// complete the incentives section
-										db.query('CALL thirdleafadd(?,?)', [stage3pick2.user, id], function(err, results, fields){
-											if (err) throw err;
-											res.render('join', {title: 'Successful Entrance'});
-											});
-											});
-											});
-										 });
-										 }
-							});
-									});
-									  });
-										 }
-										 }
-							});
-							});
-									});
-									  });
-										 }
-										 });
+										db.query('CALL leafadd(?,?)', [id, id, currentUser], function(err, results, fields){
+										  if (err) throw err;
+										  //enter the user into the next matrix
+										  db.query('SELECT user FROM stage1 WHERE user = ?', [sponid], function(err, results, fields){
+											  if (err) throw err;
+											  if(results.length === 1){
+												  db.query('SELECT * FROM stage1 WHERE user = ?', [sponid], function(err, results, fields){
+													  var stage1 = {
+														  a: results[0].a,
+														  b: results[0].b,
+														  c: results[0].c,
+														  d: results[0].d,
+														  aa: results[0].aa,
+														  ab: results[0].ab,
+														  ac: results[0].ac,
+														  ad: results[0].ad,
+														  ba: results[0].ba,
+														  bb: results[0].bb,
+														  bc: results[0].bc,
+														  bd: results[0].bd,
+														  ca: results[0].ca,
+														  cb: results[0].cb,
+														  cc: results[0].cc,
+														  cd: results[0].cd,
+														  da: results[0].da,
+														  db: results[0].dc,
+														  dc: results[0].dc,
+														  dd: results[0].dd
+													  }
+													  // if a is null
+													  if(stage1.a === null && stage1.b === null && stage1.c === null && stage1.d === null){
+														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
+															  if (err) throw err;
+															  db.query('UPDATE stage1_tree SET a = ? WHERE user = ?', [sponid], function (err, results, fields){
+																  if (err) throw err;
+																  res.render('join', {title: 'Successful Entrance'});
+															  });
+														  });
+													  }
+													  // if b is null
+													  if(stage1.a !== null && stage1.b === null && stage1.c === null && stage1.d === null){
+														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
+															  if (err) throw err;
+															  db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [sponid], function (err, results, fields){
+																  if (err) throw err;
+																  res.render('join', {title: 'Successful Entrance'});
+															  });
+														  });
+													  }
+													  // if c is null
+													  if(stage1.a !== null && stage1.b !== null && stage1.c === null && stage1.d === null){
+														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
+															  if (err) throw err;
+															  db.query('UPDATE stage1_tree SET c = ? WHERE user = ?', [sponid], function (err, results, fields){
+																  if (err) throw err;
+																  res.render('join', {title: 'Successful Entrance'});
+															  });
+														  });
+													  }
+													  // if d is null
+													  if(stage1.a !== null && stage1.b !== null && stage1.c !== null && stage1.d === null){
+														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
+															  if (err) throw err;
+															  db.query('UPDATE stage1_tree SET d = ? WHERE user = ?', [sponid], function (err, results, fields){
+																  if (err) throw err;
+																  res.render('join', {title: 'Successful Entrance'});
+															  });
+														  });
+													  }
+												  });
+											  }
 										  });
-										  });
-									});
-								}								
+										});
+									  });
+									}
+								  });
 							  });
-							});
-					    } 
+							}
+						  });
+					    }); 
                       });
                     });
                   });
@@ -1011,101 +668,4 @@ router.post('/join',  function (req, res, next) {
     }
   });
 });
-//reset post request
-router.post('/passwordreset', function(req, res, next) {
-	req.checkBody('username', 'Full Name must be between 8 to 25 characters').len(8,25);
-	req.checkBody('email', 'Email must be between 8 to 25 characters').len(8,25);
-	var errors = req.validationErrors();
-
-  if (errors) { 
-    console.log(JSON.stringify(errors));
-    res.render('passwordreset', { title: 'FAILED', errors: errors});
-
-  }
-  else {
-    var username = req.body.username;
-    var email = req.body.email;
-	db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
-		if (err) throw err;
-		if(results.length = 0){
-			res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
-		}else{
-			db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
-				if (err) throw err;
-				if(results.length = 0){
-					res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
-				}else{
-					res.render('passwordreset', {title: 'SUCCESS', check: 'Check your mail!'});
-				}
-			});
-		}
-	});
-  }
-});
-//function for reset password
-function timerreset(){
-db.query( 'SELECT date FROM reset WHERE status = ?' ['active'], function ( err, results, fields ){
-if ( err ) throw err;
-var i = 0
-while ( i> results.length  ){
-var dt = results[i]date;
-var min  = new Date().getMinutes();
-var cal  = dt.setMinutes( dt.getMinutes() + 15)
-if( cal >=  min){
-	db.query( 'UPDATE reset SET status  = ? WHERE date = ?', ['expired', dt], function ( err, results, fields){
-		if( err ) throw err;
-	});
-}
-i++;
-}
-}
-//function for verification code
-function verify(){
-db.query( 'SELECT date FROM verify WHERE status = ?' ['active'], function ( err, results, fields ){
-if ( err ) throw err;
-var i = 0
-while ( i> results.length  ){
-var dt = results[i]date;
-var min  = new Date().getMinutes();
-var cal  = dt.setMinutes( dt.getMinutes() + 15)
-if( cal >=  min){
-	db.query( 'UPDATE verify SET status  = ? WHERE date = ?', ['expired', dt], function ( err, results, fields){
-		if( err ) throw err;
-	});
-}
-i++;
-}
-}
-
-
-function fillup(x, ){
-	db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[x], function ( err, results, fields ){
-	if( err ) throw err;
-	var firstfillup = {
-		a: results[0].a,
-		b: results[0].b
-		user: results[0].user
-	}
-	db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[firstfillup.a], function ( err, results, fields ){
-	if( err ) throw err;
-	var afill = {
-		a: results[0].a,
-		b: results[0].b
-	}
-	db.query( 'UPDATE feeder_tree SET aa  = ?, ab = ? WHERE user  = ?', [afill.a, afill.b, x], function ( err, results, fields ){
-		if ( err ) throw err;
-		db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[firstfillup.b], function ( err, results, fields ){
-	if( err ) throw err;
-	var bfill = {
-		a: results[0].a,
-		b: results[0].b
-	}
-	db.query( 'UPDATE feeder_tree SET ba  = ?, bb = ? WHERE user  = ?', [bfill.a, bfill.b, x], function ( err, results, fields ){
-		if ( err ) throw err;
-		});
-	});
-	});
-	});
-	});
-}
 module.exports = router;
