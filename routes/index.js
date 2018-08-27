@@ -608,7 +608,7 @@ router.post('/join',  function (req, res, next) {
 													  if(stage1.a === null && stage1.b === null && stage1.c === null && stage1.d === null){
 														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
 															  if (err) throw err;
-															  db.query('UPDATE stage1_tree SET a = ? WHERE user = ?', [sponid], function (err, results, fields){
+															  db.query('UPDATE stage1_tree SET a = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  if (err) throw err;
 																  res.render('join', {title: 'Successful Entrance'});
 															  });
@@ -618,7 +618,7 @@ router.post('/join',  function (req, res, next) {
 													  if(stage1.a !== null && stage1.b === null && stage1.c === null && stage1.d === null){
 														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
 															  if (err) throw err;
-															  db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [sponid], function (err, results, fields){
+															  db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  if (err) throw err;
 																  res.render('join', {title: 'Successful Entrance'});
 															  });
@@ -628,7 +628,7 @@ router.post('/join',  function (req, res, next) {
 													  if(stage1.a !== null && stage1.b !== null && stage1.c === null && stage1.d === null){
 														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
 															  if (err) throw err;
-															  db.query('UPDATE stage1_tree SET c = ? WHERE user = ?', [sponid], function (err, results, fields){
+															  db.query('UPDATE stage1_tree SET c = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  if (err) throw err;
 																  res.render('join', {title: 'Successful Entrance'});
 															  });
@@ -638,12 +638,60 @@ router.post('/join',  function (req, res, next) {
 													  if(stage1.a !== null && stage1.b !== null && stage1.c !== null && stage1.d === null){
 														  db.query('CALL stage1in(?,?,?)',[sponid, sponid, id], function(err, results, fields){
 															  if (err) throw err;
-															  db.query('UPDATE stage1_tree SET d = ? WHERE user = ?', [sponid], function (err, results, fields){
+															  db.query('UPDATE stage1_tree SET d = ? WHERE user = ?', [id, sponid], function (err, results, fields){
 																  if (err) throw err;
 																  res.render('join', {title: 'Successful Entrance'});
 															  });
 														  });
 													  }
+													//if a or b or c or d is null.
+														db.query('CALL stage1stspill (?)', [sponid], function(err, results, fields){
+															if(err) throw err;
+															var stage1depth = results[0].depth
+															db.query('CALL stage12ndspill (?)', [sponid], function(err, results, fields){
+																if (err) throw err;
+																var firstspill = {
+																	user: results[0].user,
+																	depth: results[0].depth
+																}
+																//check if the user is the lowest depth.
+																	
+																if(firstspill.depth === stage1depth){
+																	
+																	//inserts into the a of the user
+																	db.query('UPDATE stage1_tree SET a = ? WHERE user = ?', [id, sponid], function (err, results, fields){
+																  		if (err) throw err;
+																		//add procedure
+																		db.query('CALL stage1in(?,?,?)',[sponid, firstspill.user, id], function(err, results, fields){
+																			if (err) throw err;
+																			res.render('join', {title: 'Successful Entrance'});
+																		});
+																	});
+																}
+																//if the a is filled
+																//check if the user is the lowest depth.
+																if(firstspill.depth !== stage1depth){
+																	db.query('CALL stage13rdspill (?)', [sponid], function(err, results, fields){
+																		if (err) throw err; 
+																		var stage1b = {
+																			user: results[0].user,
+																			depth: results[0].depth
+																		}
+																		if(stage1b.depth === stage1.depth){
+																			//inserts into the a of the user
+																			db.query('UPDATE stage1_tree SET b = ? WHERE user = ?', [id, sponid], function (err, results, fields){
+																  				if (err) throw err;
+																		//add procedure
+																				db.query('CALL stage1in(?,?,?)',[sponid, firstspill.user, id], function(err, results, fields){
+																					if (err) throw err;
+																					res.render('join', {title: 'Successful Entrance'});
+																				});
+																			});
+																		}
+																	});
+																}
+															});
+														});
 												  });
 											  }
 										  });

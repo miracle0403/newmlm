@@ -7,7 +7,7 @@ exports.newmatrix = function newmatrix(x){
 		secure: false, // true for 465, false for other ports
 		auth: { 
 			user: 'noreply@swiftcircle.website', // generated ethereal 
-			pass:  'Miracle1994' // generated ethereal password } }); 
+			pass:  '{}' // generated ethereal password } }); 
 		  }
     });
 transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' })); 
