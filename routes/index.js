@@ -2,6 +2,7 @@
 const nodemailer = require('nodemailer');
 //var resete = require('../nodemailer/passwordreset.js');
 var verify = require('../nodemailer/verification.js');
+var timer = require( '../functions/datefunctions.js' );
 var express = require('express');
 var passport = require('passport'); 
 var securePin = require('secure-pin');
@@ -12,11 +13,14 @@ var db = require('../db.js');
 var expressValidator = require('express-validator');
 var  matrix = require('../functions/withsponsor.js');
 
-var bcrypt = require('bcrypt');
-const saltRounds = 15;
+var bcrypt = require('bcrypt-nodejs');
+function rounds( err, results ){
+	if ( err ) throw err;
+}
+const saltRounds = bcrypt.genSalt( 15, rounds);
 
 function restrict( ){
-	db.query( 'SELECT user_id FROM admin WHERE user_id  = ?', [currentUser], function ( err, results, fields ){
+	db.query( 'SELECT user_id FROM admin WHERE user_id  = ?', [currentUser], function ( err, results, fields ){ 
 		if( err ) throw err;
 		if( results.length === 0 ){
 			res.redirect( 'dashboard' )
@@ -28,7 +32,7 @@ function restrict( ){
 router.get('/', function(req, res, next) {
   console.log(req.user)
   console.log(req.isAuthenticated())
-  res.render('index', { title: 'AKALINE GLOBAL SERVICES' });
+  res.render('index', { title: 'AKAHLINE GLOBAL SERVICES' });
 });
 
 // get join
@@ -73,7 +77,13 @@ router.get('/reset/:username/:email/:password/:code',  function (req, res, next)
 									if (status ==='expired'){
 										res.render('nullreset', {title: 'Link Expired!'});
 									}else{
+										db.query( 'UPDATE user SET verification  = ? WHERE username = ?',['yes', username], function ( err, results, fields ){
+											if( err ) throw err;
+											db.query( 'UPDATE verify SET status = ? WHERE username = ?',['expired', username], function ( err, results, fields ){
+											if( err ) throw err;
 										res.redirect('dashboard');
+											});
+										})	;
 									}
 								});
 							}
@@ -86,6 +96,8 @@ router.get('/reset/:username/:email/:password/:code',  function (req, res, next)
 	});
 });
 
+//var vtimer  = timer.timerreset( )
+//setInterval( 10000, vtimer ); 
 // get password verify
 router.get('/verify/:username/:email/:password/:code',  function (req, res, next){
   var username = req.params.username;
@@ -108,7 +120,11 @@ router.get('/verify/:username/:email/:password/:code',  function (req, res, next
 			}else{
 				db.query('SELECT password FROM user WHERE password = ?', [password], function(err, results, fields){
 					if (err) throw err;
-					if (results.length === 0){
+					var pass = results[0].password;
+					//compare password
+						bcrypt.compare( password, pass, null, function ( err, response ){
+					
+					if (response === 0){
 						res.render('nullreset', {title: 'Invalid link'});
 					}else{
 						db.query('SELECT code FROM verify WHERE code = ?', [code], function(err, results, fields){
@@ -123,12 +139,13 @@ router.get('/verify/:username/:email/:password/:code',  function (req, res, next
 									if (status ==='expired'){
 										res.render('nullreset', {title: 'Link Expired!'});
 									}else{
-										res.redirect('changepassword');
+										res.redirect('login');
 									}
 								});
 							}
 						});
 					}
+					});
 				});
 			}
 		  });
@@ -290,6 +307,15 @@ router.post('/register', function(req, res, next) {
 
     var db = require('../db.js');
     
+    //export variables to sen mails
+    exports.sponsor = sponsor;
+    exports.phone = phone;
+    exports.fullname = fullname;
+    exports.password = password;
+    exports.code = code;
+    exports.email  = email;
+    exports.username = username;
+    
     //check if sponsor is valid
     db.query('SELECT username, full_name, email FROM user WHERE username = ?', [sponsor], function(err, results, fields){
       if (err) throw err;
@@ -316,10 +342,11 @@ router.post('/register', function(req, res, next) {
                 console.log(error);
                 res.render('register', {title: "REGISTRATION FAILED", email: error});
               }else{
-                bcrypt.hash(password, saltRounds, function(err, hash){
-                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 0], function(error, result, fields){
+                bcrypt.hash(password, saltRounds, null, function(err, hash){
+                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active'], function(error, result, fields){
                     if (error) throw error;
-					verify.mail(email);
+					   var veri = require( '../functions/mailfunctions.js' );
+					   veri.sendverify();
                     console.log(hash);
                     console.log(results); 
                     res.render('register', {title: 'SUCCESS', username: username});  
@@ -352,7 +379,7 @@ function pin(){
     securePin.generateString(16, charSet, function(str){
       console.log(str);
 	  var pinn = 'AGS' + pin;
-      bcrypt.hash(pinn, saltRounds, function(err, hash){
+      bcrypt.hash(pinn, saltRounds, null, function(err, hash){
         db.query('INSERT INTO pin (pin, serial) VALUES (?, ?)', [hash, str], function(error, results, fields){
           if (error) throw error;
           //console.log(results)
@@ -471,7 +498,7 @@ router.post('/join',  function (req, res, next) {
       res.render('join', {title: 'MATRIX UNSUCCESSCUL!'})
     }else{
       const hash = results[0].pin;
-      bcrypt.compare(pin, hash, function(err, response){
+      bcrypt.compare(pin, hash, null, function(err, response){
         if(response === false){
           console.log('the pin does not exist');
           res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!'})

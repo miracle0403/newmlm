@@ -12,7 +12,7 @@ var hbs = require('hbs');
 var fs = require('fs');
 
 //Authentication packages
-var bcrypt = require('bcrypt');
+var bcrypt = require('bcrypt-nodejs');
 var securePin = require('secure-pin');
 var passport = require('passport');
 var localStrategy = require('passport-local'),Strategy;
@@ -105,7 +105,7 @@ passport.use(new localStrategy(function(username, password, done){
         console.log(results[0]);
         const hash = results[0].password.toString();
 
-        bcrypt.compare(password, hash, function(err, response){
+        bcrypt.compare(password, hash, null, function(err, response){
           if (response === true){
             return done(null, {user_id: results[0].user_id});
           }

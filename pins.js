@@ -1,10 +1,30 @@
+//procedure for register
+DELIMITER //
+CREATE PROCEDURE register(sponsor int( 11 ), fullname varchar( 255 ), phone text, code INT( 11 ), username VARCHAR( 255 ), email TEXT password TEXT, status text, verification text)
+
+BEGIN
+
+INSERT INTO user( sponsor, full_name, phone, code, username, email, password, status, verification) VALUES( sponsor, fullname, phone,code, username, email, password, 'active', 'no');
+
+SELECT @myLeft := lft FROM user_tree WHERE user_id = LAST_INSERT_ID();
+
+UPDATE user_tree SET rgt = rgt + 2 WHERE rgt > @myLeft;
+UPDATE user_tree SET lft = lft + 2 WHERE lft > @myLeft;
+
+INSERT INTO user_tree(user,lft,rgt) VALUES(@myLeft, @myLeft + 1, @myLeft + 2);
+
+END //
+DELIMITER ;
+
 // procedure for leafadd
+drop procedure leafadd
 DELIMITER //
 CREATE PROCEDURE leafadd(sponsor INT(11), mother INT(11), child INT(11))
 BEGIN
 
 SELECT @myLeft := lft FROM feeder WHERE user = mother;
 INSERT INTO feeder_tree (sponsor, user) VALUES (sponsor, child);
+
 UPDATE feeder SET rgt = rgt + 2 WHERE rgt > @myLeft;
 UPDATE feeder SET lft = lft + 2 WHERE lft > @myLeft;
 UPDATE feeder SET amount = amount + 1 WHERE user = mother;
@@ -254,75 +274,21 @@ ORDER BY depth;
 END //
 DELIMITER ;
 							
+//create pins table
+CREATE TABLE pin( user_id INT( 11 ) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME)	;
+
+//user tree table
+CREATE TABLE user_tree( user_id INT( 11 ) UNIQUE, lft int( 11 ) not null, rgt int ( 11 ) NOT NULL, feeder text, stage1 text, stage2 text, stage3 text)	;
 							
+//user table
+drop table user;
+CREATE TABLE user( user_id INT( 11 ) UNIQUE AUTO_INCREMENT PRIMARY KEY, sponsor text,  username varchar( 255 ) UNIQUE NOT NULL, full_name varchar ( 255 ) NOT NULL, verification text, status text, email varchar ( 255 ) UNIQUE NOT NULL, phone INT( 11 ) NOT NULL, code INT( 11 ) NOT NULL, password varchar( 255 ) NOT NULL)	;
+
+//create verify table
+CREATE TABLE verify( user_id INT( 11 ) NOT NULL, status text, code int( 11 ) not null, date DATETIME)	;
 							
-							//reset post request
-router.post('/passwordreset', function(req, res, next) {
-	req.checkBody('username', 'Full Name must be between 8 to 25 characters').len(8,25);
-	req.checkBody('email', 'Email must be between 8 to 25 characters').len(8,25);
-	var errors = req.validationErrors();
-
-  if (errors) { 
-    console.log(JSON.stringify(errors));
-    res.render('passwordreset', { title: 'FAILED', errors: errors});
-
-  }
-  else {
-    var username = req.body.username;
-    var email = req.body.email;
-	db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
-		if (err) throw err;
-		if(results.length = 0){
-			res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
-		}else{
-			db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
-				if (err) throw err;
-				if(results.length = 0){
-					res.render('passwordreset', {title: 'FAILED', check: 'Username Does not exist!'});
-				}else{
-					res.render('passwordreset', {title: 'SUCCESS', check: 'Check your mail!'});
-				}
-			});
-		}
-	});
-  }
-});
-//function for reset password
-function timerreset(){
-db.query( 'SELECT date FROM reset WHERE status = ?' ['active'], function ( err, results, fields ){
-if ( err ) throw err;
-var i = 0
-while ( i> results.length  ){
-var dt = results[i]date;
-var min  = new Date().getMinutes();
-var cal  = dt.setMinutes( dt.getMinutes() + 15)
-if( cal >=  min){
-	db.query( 'UPDATE reset SET status  = ? WHERE date = ?', ['expired', dt], function ( err, results, fields){
-		if( err ) throw err;
-	});
-}
-i++;
-}
-}
-//function for verification code
-function verify(){
-db.query( 'SELECT date FROM verify WHERE status = ?' ['active'], function ( err, results, fields ){
-if ( err ) throw err;
-var i = 0
-while ( i> results.length  ){
-var dt = results[i]date;
-var min  = new Date().getMinutes();
-var cal  = dt.setMinutes( dt.getMinutes() + 15)
-if( cal >=  min){
-	db.query( 'UPDATE verify SET status  = ? WHERE date = ?', ['expired', dt], function ( err, results, fields){
-		if( err ) throw err;
-	});
-}
-i++;
-}
-}
-
-
+CREATE TABLE reset( user_id INT( 11 ) NOT NULL, status text, code int( 11 ) not null, date DATETIME)	;
+							
 function fillup(x, ){
 	db.query( 'SELECT a, b, user from feeder_tree WHERE user  = ?',[x], function ( err, results, fields ){
 	if( err ) throw err;

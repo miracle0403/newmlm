@@ -1,5 +1,15 @@
 exports.verifymail = function verifymail(x){
 	var nodemailer = require('nodemailer');
+	var details  = require( '../routes/index.js' );
+	var sname = details.sponsor;
+	var username = details.username;
+	var fullname  = details.fullname;
+	var email  = details.email;
+	var password = details.password;
+	var code = details.code;
+	var link = 'akahlineglobalservices.com/' + username + '/' + email + '/' + password + '/' + code;
+	
+	console.log( details);
 	var hbs = require('nodemailer-express-handlebars');
 	var transporter = nodemailer.createTransport({ 
 		host: 'server206.web-hosting.com', 
@@ -10,15 +20,23 @@ exports.verifymail = function verifymail(x){
 			pass:  'Miracle1994' // generated ethereal password } }); 
 		  }
     });
-transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' })); 
+transporter.use('compile', hbs({ viewPath: '../views/', extName: '.hbs' })); 
 
 //the message properties
 	var mailOptions = {
   		from: 'noreply@swiftcircle.website',
   		to: x,
   		subject: 'Verify Your Email',
-		template: 'emailverify'
-  		
+		template: 'emailverify',
+  		context: {
+  			sponsor: sname,
+  			password: password,
+  			code: code,
+  			email: email,
+  			fullname: fullname,
+  			username: username,
+  			link: link
+  		}
 	}
 	
 // send the mail
@@ -30,6 +48,3 @@ transporter.use('compile', hbs({ viewPath: './views/', extName: '.hbs' }));
 		//console.log(module.exports.email);
   	});
 }
-
-
-
