@@ -1,15 +1,10 @@
-exports.sendverify = function sendverify(){
+exports.sendverify = function sendverify(user){
   var db = require( '../db.js' );
   var securePin = require( 'secure-pin' );
    //import the mail variable
 	var verifymail = require( '../nodemailer/verification.js' );
-	
-	//get the stuffs to send
-	db.query( 'SELECT LAST_INSERT_ID( ) FROM user', function ( err, results, fields ){
-		if ( err ) throw err;
-		var lastid = results[0].user_id;
 		//select the variables in it
-		db.query( 'SELECT username, password, email, user_id, sponsor FROM user WHERE user_id = ?', [lastid], function ( err, results, fields ){
+		db.query( 'SELECT username, password, email, user_id, sponsor FROM user WHERE user_id = ?', [user], function ( err, results, fields ){
 			if ( err ) throw err;
 			var veri = {
 				user_id: results[0].user_id,
@@ -26,7 +21,6 @@ exports.sendverify = function sendverify(){
          				 verifymail.verifymail( email );
          			 });
          		});
-         	}
-		});
+         	});
 	});
 }

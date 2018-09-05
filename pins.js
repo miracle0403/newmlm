@@ -1,12 +1,15 @@
+
 //procedure for register
 DELIMITER //
-CREATE PROCEDURE register(sponsor int( 11 ), fullname varchar( 255 ), phone varchar( 255 ), code int( 11 ), username VARCHAR( 255 ), email varchar( 255 ), password varcyar( 255 ), status varchar( 255 ), verification text)
+CREATE PROCEDURE register(sponsor INT( 11 ), fullname VARCHAR( 255 ), phone INT( 11), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)
 
 BEGIN
 
 INSERT INTO user ( sponsor, full_name, phone, code, username, email, password, status, verification) VALUES( sponsor, fullname, phone,code, username, email, password, 'active', 'no');
 
-SELECT @myLeft := lft FROM user_tree WHERE user_id = LAST_INSERT_ID();
+SELECT @user := LAST_INSERT_ID() from user_tree;
+
+SELECT @myLeft := lft FROM user_tree WHERE user_id = @user;
 
 UPDATE user_tree SET rgt = rgt + 2 WHERE rgt > @myLeft;
 UPDATE user_tree SET lft = lft + 2 WHERE lft > @myLeft;

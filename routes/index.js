@@ -184,9 +184,9 @@ router.get('/register/:username', function(req, res, next) {
     function(err, results, fields){
       if (err) throw err;
       if (results.length === 0){
-        res.render('register')
+        res.render('register', {title: 'REGISTRATION'});
         console.log('not a valid sponsor name');
-        req.flash( 'error', error.msg);
+       // req.flash( 'error', error.msg);
         res.render( '/register')
       }else{
         var sponsor = results[0].username;
@@ -201,16 +201,8 @@ router.get('/register/:username', function(req, res, next) {
 
 //register get request
 router.get('/register', function(req, res, next) {
-	const flashMessages = res.locals.getMessages( );
-	if( flashMessages.error ){
-		res.render( 'register', {
-			showErrors: true,
-			errors: flashMessages.error
-		});
-	}else{
-		res.render( 'register' )
-	}
-    res.render('register', { title: 'REGISTRATION'});
+	
+    res.render('register',  { title: 'REGISTRATION'});
 });
 
 //get login
@@ -341,9 +333,10 @@ router.post('/register', function(req, res, next) {
     db.query('SELECT username, full_name, email FROM user WHERE username = ?', [sponsor], function(err, results, fields){
       if (err) throw err;
       if(results.length===0){
-        var spone = "This Sponsor does not exist"
-        console.log(sponsor);
-        res.render('register', {title: "REGISTRATION FAILED", spone: sponsor});
+        var error = "This Sponsor does not exist";
+        //req.flash( 'error', error)
+        console.log(error);
+        res.render('register', {title: "REGISTRATION FAILED", error: error });
       }else{
 		  var sponmail ={
 			email: results[0].email,
@@ -354,6 +347,7 @@ router.post('/register', function(req, res, next) {
           if(results.length===1){
             var error = "Sorry, this username is taken";
             console.log(error)
+           // req.flash( 'error', error)
             res.render('register', {title: "REGISTRATION FAILED", error: error});
           }else{
             db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){ 
@@ -361,16 +355,18 @@ router.post('/register', function(req, res, next) {
               if(results.length===1){ 
                 var error = "Sorry, this email is taken";
                 console.log(error);
-                res.render('register', {title: "REGISTRATION FAILED", email: error});
+                //req.flash( 'error', error)
+                res.render('register', {title: "REGISTRATION FAILED", error: error});
               }else{
                 bcrypt.hash(password, saltRounds, null, function(err, hash){
-                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active'], function(error, result, fields){
-                    if (error) throw error;
+                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(error, result, fields){
+                    if (err) throw error;
 					   var veri = require( '../functions/mailfunctions.js' );
-					   veri.sendverify();
+					   veri.sendverify(username);
+					   var success  = 'Your registration was successful';
                     console.log(hash);
                     console.log(results); 
-                    res.render('register', {title: 'SUCCESS', username: username});  
+                    res.render('register', {title: 'SUCCESS', success: success});  
                   });
                 });
               }
