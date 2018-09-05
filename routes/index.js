@@ -186,6 +186,8 @@ router.get('/register/:username', function(req, res, next) {
       if (results.length === 0){
         res.render('register')
         console.log('not a valid sponsor name');
+        req.flash( 'error', error.msg);
+        res.render( '/register')
       }else{
         var sponsor = results[0].username;
         console.log(sponsor)
@@ -199,11 +201,30 @@ router.get('/register/:username', function(req, res, next) {
 
 //register get request
 router.get('/register', function(req, res, next) {
+	const flashMessages = res.locals.getMessages( );
+	if( flashMessages.error ){
+		res.render( 'register', {
+			showErrors: true,
+			errors: flashMessages.error
+		});
+	}else{
+		res.render( 'register' )
+	}
     res.render('register', { title: 'REGISTRATION'});
 });
 
 //get login
 router.get('/login', function(req, res, next) {
+	const flashMessages = res.locals.getMessages( );
+	if( flashMessages.error ){
+		res.render( 'login', {
+			showErrors: true,
+			errors: flashMessages.error
+		});
+	}else{
+		res.render( 'login' )
+	}
+	//console.log( 'flash', flashMessages);
   res.render('login', { title: 'LOG IN'});
 });
 
@@ -402,7 +423,8 @@ function authentificationMiddleware(){
 //post log in
 router.post('/login', passport.authenticate('local', {
   failureRedirect: '/login',
-  successRedirect: '/dashboard'
+  successRedirect: '/dashboard',
+  failureFlash: true
 }));
 
 //post profile

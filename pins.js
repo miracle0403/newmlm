@@ -1,10 +1,10 @@
 //procedure for register
 DELIMITER //
-CREATE PROCEDURE register(sponsor int( 11 ), fullname varchar( 255 ), phone text, code INT( 11 ), username VARCHAR( 255 ), email TEXT password TEXT, status text, verification text)
+CREATE PROCEDURE register(sponsor int( 11 ), fullname varchar( 255 ), phone varchar( 255 ), code int( 11 ), username VARCHAR( 255 ), email varchar( 255 ), password varcyar( 255 ), status varchar( 255 ), verification text)
 
 BEGIN
 
-INSERT INTO user( sponsor, full_name, phone, code, username, email, password, status, verification) VALUES( sponsor, fullname, phone,code, username, email, password, 'active', 'no');
+INSERT INTO user ( sponsor, full_name, phone, code, username, email, password, status, verification) VALUES( sponsor, fullname, phone,code, username, email, password, 'active', 'no');
 
 SELECT @myLeft := lft FROM user_tree WHERE user_id = LAST_INSERT_ID();
 
@@ -278,7 +278,8 @@ DELIMITER ;
 CREATE TABLE pin( user_id INT( 11 ) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME)	;
 
 //user tree table
-CREATE TABLE user_tree( user_id INT( 11 ) UNIQUE, lft int( 11 ) not null, rgt int ( 11 ) NOT NULL, feeder text, stage1 text, stage2 text, stage3 text)	;
+drop table user_tree;
+CREATE TABLE user_tree( user_id INT( 11 ) UNIQUE AUTO_INCREMENT, lft int( 11 ) not null, rgt int ( 11 ) NOT NULL, feeder text, stage1 text, stage2 text, stage3 text)	;
 							
 //user table
 drop table user;

@@ -1,4 +1,5 @@
-'use strict';
+'use strict'; 
+var env  = require('dotenv').config();
 const nodemailer = require('nodemailer');
 var createError = require('http-errors');
 var express = require('express');
@@ -11,6 +12,7 @@ var mysql = require('mysql');
 var hbs = require('hbs');
 var fs = require('fs');
 
+
 //Authentication packages
 var bcrypt = require('bcrypt-nodejs');
 var securePin = require('secure-pin');
@@ -18,14 +20,12 @@ var passport = require('passport');
 var localStrategy = require('passport-local'),Strategy;
 var session = require('express-session');
 var MySQLStore = require ('express-mysql-session')(session);
-var flash = require('express-flash');
+var flash = require('express-flash-messages');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var db = require('./db.js');
 
 var app = express();
-
-app.use(flash());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -78,6 +78,7 @@ app.use(session({
   //passport
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
 // middle ware
 app.use(bodyParser.json());
@@ -99,7 +100,9 @@ passport.use(new localStrategy(function(username, password, done){
     db.query('SELECT user_id, password FROM user WHERE username = ?', [username], function (err, results, fields){
       if (err) {done(err)};
       if (results.length === 0){
-        done(null, false);
+        done(null, false, {
+        	message: 'Invalid Username'
+        });
       }
       else {
         console.log(results[0]);
@@ -110,7 +113,9 @@ passport.use(new localStrategy(function(username, password, done){
             return done(null, {user_id: results[0].user_id});
           }
           else{
-            return done(null, false);
+            return done(null, false,{
+            	message:'Invalid Password'
+            });
         }
       });
       
