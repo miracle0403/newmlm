@@ -108,7 +108,7 @@ passport.use(new localStrategy(function(username, password, done){
         console.log(results[0]);
         const hash = results[0].password.toString();
 
-        bcrypt.compare(password, hash, null, function(err, response){
+        bcrypt.compare(password, hash, function(err, response){
           if (response === true){
             return done(null, {user_id: results[0].user_id});
           }

@@ -256,15 +256,24 @@ router.get('/logout', function(req, res, next) {
 router.get('/dashboard', authentificationMiddleware(), function(req, res, next) {
   var db = require('../db.js');
   var currentUser = req.session.passport.user.user_id;
-
-  //get sponsor name from database to profile page
-  db.query('SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
-    if (err) throw err;
-
-    var sponsor = results[0];
-    if (sponsor){
-      res.render('dashboard', { title: 'USER DASHBOARD', sponsor:sponsor });
-    }
+  db.query( 'SELECT lft, rgt FROM user_tree WHERE user_id  = ?', [currentUser], function ( err, results, fields ){
+  	if( err ) throw err;
+  	if( results.length === 0){
+  		db.query( 'SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+  			if ( err ) throw err;
+  			var spo = results[0].sponsor;
+  			console.log( 'spo is ' + spo);
+  					db.query( 'SELECT user_id FROM user WHERE username = ?', [spo], function ( err, results, fields ){
+  				if ( err ) throw err;
+  				var spoid = results[0].user_id;
+  				console.log( spoid);
+  				db.query( 'CALL useradd ( ?,? )', [spoid, currentUser], function( err, results, fields) {
+  					if ( err ) throw err;
+  					res.render( 'dashboard' )
+  				});
+  			});
+  		});
+  	}
   });
 });
 
@@ -321,13 +330,13 @@ router.post('/register', function(req, res, next) {
     var db = require('../db.js');
     
     //export variables to sen mails
-    exports.sponsor = sponsor;
+  /*  exports.sponsor = sponsor;
     exports.phone = phone;
     exports.fullname = fullname;
     exports.password = password;
     exports.code = code;
     exports.email  = email;
-    exports.username = username;
+    exports.username = username;*/
     
     //check if sponsor is valid
     db.query('SELECT username, full_name, email FROM user WHERE username = ?', [sponsor], function(err, results, fields){
@@ -341,7 +350,7 @@ router.post('/register', function(req, res, next) {
 		  var sponmail ={
 			email: results[0].email,
 			name: results[0].full_name
-		  }
+		  } 
         db.query('SELECT username FROM user WHERE username = ?', [username], function(err, results, fields){
           if (err) throw err;
           if(results.length===1){
@@ -358,17 +367,20 @@ router.post('/register', function(req, res, next) {
                 //req.flash( 'error', error)
                 res.render('register', {title: "REGISTRATION FAILED", error: error});
               }else{
-                bcrypt.hash(password, saltRounds, null, function(err, hash){
-                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(error, result, fields){
-                    if (err) throw error;
-					   var veri = require( '../functions/mailfunctions.js' );
-					   veri.sendverify(username);
-					   var success  = 'Your registration was successful';
-                    console.log(hash);
-                    console.log(results); 
-                    res.render('register', {title: 'SUCCESS', success: success});  
-                  });
-                });
+              	
+              		 bcrypt.hash(password, saltRounds, null, function(err, hash){
+                  db.query('CALL register(?, ?, ?, ?, ?, ?, ?, ?, ?)', [sponsor, fullname, phone, code, username, email, hash, 'active', 'no'], function(err, result, fields){
+                    if (err) throw err;
+                    
+                    		var veri = require( '../functions/mailfunctions.js' );
+					   		//veri.sendverify(username);
+					   			var success  = 'Your registration was successful';
+                    		console.log(hash);
+                   		 	console.log(results); 
+                    		res.render('register', {title: 'SUCCESS', success: success});                   	            	  
+              		
+              		});
+              	});
               }
             });
           }
@@ -388,8 +400,8 @@ passport.deserializeUser(function(user_id, done){
 
 
 //get function for pin and serial number
-function pin(){
-  var charSet = new securePin.CharSet();
+function pin(){ 
+  var charSet = new securePin.CharSet(); 
   charSet.addLowerCaseAlpha().addUpperCaseAlpha().addNumeric().randomize();
   securePin.generatePin(16, function(pin){
     console.log("Pin: AGS"+ pin);

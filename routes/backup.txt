@@ -1,53 +1,10 @@
-if(results.length === 1){
-              var user_enter = results[0].user;
-              //check if the third stage is filled by the user
-              db.query('SELECT user FROM stage3 WHERE user = ?', [currentUser], function(err, results, fields){
-                if (err) throw err;
-                if(results.length === 0){
-                  res.render('join', {title: 'SORRY YOU CANNOT ENTER THE MATRIX NOW'});
-                }
-                if(results.length > 0){
-                  // check where the user in empty in the jumper level
-                  db.query('SELECT caa, cab, cac, cba, cbb, cbc, cca, ccb, ccc FROM jumper WHERE (caa = null OR cab = null OR cac = null OR cba = null OR cbc = null OR cca= null OR ccb = null OR ccc = null) and user = ?', [currentUser], function(err, results, fields){
-                    if (err) throw err;
-                    console.log(results);
-                    if(results.length > 1){
-                      res.render('join', {title: 'SORRY YOU CANNOT ENTER THE MATRIX NOW'});
-                    }
-                    if(results.length === 0){
-                      db.query('UPDATE pin SET user_id = ? WHERE serial = ?', [currentUser, serial], function(err, results,fields){
-                        if (err) throw err;
-                        console.log(results);
-                        //selects the sponsor
-                        db.query('SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
-                          if (err) throw err;
-                          var sponsor = results[0].sponsor;
-                          console.log('sponsor name is:' + sponsor);
-                          //get the sponsor id
-                          db.query('SELECT user_id FROM user WHERE username = ?', [sponsor], function(err, results, fields){
-                            if (err) throw err;
-                            var id = results[0].user_id;
-                            console.log('sponsor id is ' + id);
-                            //check if the user is already a paid member 
-                            db.query('SELECT paid FROM user WHERE user_id = ?', [id], function(err, results, fields){
-                              if (err) throw err; 
-                              console.log(results)
-                              var paid = results[0].paid;  
-                              console.log('the paid value is ' + paid);
-							  db.query('SELECT sponsor FROM user WHERE user_id = ?', [id], function(err, results, fields){
-								if (err) throw err;
-							    var spon = results[0].sponsor;
-								db.query('SELECT user_id FROM user WHERE username = ?', [spon], function(err, results, fields){
-								  if (err) throw err;
-								  var sponId = results[0].user_id;
-								});
-							  });
-                            });
-                          });
-                        });
-                      });
-                    }
-                  });
-                }
-              });
-            }
+  	
+  	  //get sponsor name from database to profile page
+  db.query('SELECT sponsor FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
+    if (err) throw err;
+
+    var sponsor = results[0];
+    if (sponsor){
+      res.render('dashboard', { title: 'USER DASHBOARD', sponsor:sponsor });
+    }
+   });

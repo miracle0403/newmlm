@@ -1,24 +1,4 @@
 
-//procedure for register
-DELIMITER //
-CREATE PROCEDURE register(sponsor INT( 11 ), fullname VARCHAR( 255 ), phone INT( 11), code INT( 11 ), username VARCHAR( 255 ), email VARCHAR ( 255 ), password VARCHAR( 255 ), status VARCHAR( 255 ), verification TEXT)
-
-BEGIN
-
-INSERT INTO user ( sponsor, full_name, phone, code, username, email, password, status, verification) VALUES( sponsor, fullname, phone,code, username, email, password, 'active', 'no');
-
-SELECT @user := LAST_INSERT_ID() from user_tree;
-
-SELECT @myLeft := lft FROM user_tree WHERE user_id = @user;
-
-UPDATE user_tree SET rgt = rgt + 2 WHERE rgt > @myLeft;
-UPDATE user_tree SET lft = lft + 2 WHERE lft > @myLeft;
-
-INSERT INTO user_tree(user,lft,rgt) VALUES(@myLeft, @myLeft + 1, @myLeft + 2);
-
-END //
-DELIMITER ;
-
 // procedure for leafadd
 drop procedure leafadd
 DELIMITER //
@@ -31,7 +11,8 @@ INSERT INTO feeder_tree (sponsor, user) VALUES (sponsor, child);
 UPDATE feeder SET rgt = rgt + 2 WHERE rgt > @myLeft;
 UPDATE feeder SET lft = lft + 2 WHERE lft > @myLeft;
 UPDATE feeder SET amount = amount + 1 WHERE user = mother;
-INSERT INTO feeder(user,lft,rgt) VALUES(child, @myLeft + 1, @myLeft + 2);
+
+INSERT INTO feeder(user, lft, rgt) VALUES(child, @myLeft + 1, @myLeft + 2);
 
 END //
 DELIMITER ;
@@ -277,16 +258,8 @@ ORDER BY depth;
 END //
 DELIMITER ;
 							
-//create pins table
-CREATE TABLE pin( user_id INT( 11 ) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME)	;
 
-//user tree table
-drop table user_tree;
-CREATE TABLE user_tree( user_id INT( 11 ) UNIQUE AUTO_INCREMENT, lft int( 11 ) not null, rgt int ( 11 ) NOT NULL, feeder text, stage1 text, stage2 text, stage3 text)	;
-							
-//user table
-drop table user;
-CREATE TABLE user( user_id INT( 11 ) UNIQUE AUTO_INCREMENT PRIMARY KEY, sponsor text,  username varchar( 255 ) UNIQUE NOT NULL, full_name varchar ( 255 ) NOT NULL, verification text, status text, email varchar ( 255 ) UNIQUE NOT NULL, phone INT( 11 ) NOT NULL, code INT( 11 ) NOT NULL, password varchar( 255 ) NOT NULL)	;
+
 
 //create verify table
 CREATE TABLE verify( user_id INT( 11 ) NOT NULL, status text, code int( 11 ) not null, date DATETIME)	;
