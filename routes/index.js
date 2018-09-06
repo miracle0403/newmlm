@@ -274,6 +274,51 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
   			});
   		});
   	}
+  	//if the user had been added...
+  	if( results.length !== 0 ){
+  		//check if the user has updated his profile
+  		db.query( 'SELECT user_id FROM profile WHERE user_id = ?', [currentUser], function ( err, results, fields ){
+  			if( err ) throw err;
+  			if( results.length === 0 ){
+  				res.redirect( 'profile' )
+  			}
+  			else{
+  				//get the earnings
+  				db.query( 'SELECT * FROM earnings WHERE user_id  = ?', [currentUser], function ( err, results, fields ){
+  					if( err ) throw err;
+  					if( results.length === 0 ){
+  						var noearnings = 0;
+  						res.render( 'dashboard', {title: 'USER DASHBOARD', noearnings: noearnings });
+  										
+  					}else{
+  						var earnings = {
+  							feeder: results[0].feeder,
+  							stage1: results[0].stage1,
+  							stage2: results[0].stage2,
+  							stage3: results[0].stage3,
+  							stage4: results[0].stage4,
+  							powerbank: results[0].powerbank,
+  							phone: results[0].phone,
+  							laptop: results[0].laptop,
+  							leadership: results[0].leadership,
+  							empower: results[0].empower,
+  							salary: results[0].salary
+  						}
+  						db.query( 'SELECT feeder FROM user_tree WHERE user_id  = ?', [currentUser], function ( err, results, fields){
+  							if( err ) throw err;
+  							console.log( results )
+  							var feeder = results[0].feeder;
+  							console.log( feeder);
+  							if (feeder === null){
+  								var error = 'You are not yet in the matrix... please click on join matrix to join';
+  						res.render( 'dashboard', {title: 'USER DASHBOARD', error: error, salary: earnings.salary, empower: earnings.empower, leadership: earnings.leadership, laptop: earnings.laptop, phone: earnings.phone, powerbank: earnings.powerbank, stage4: earnings.stage4, stage3: earnings.stage3, stage2: earnings.stage2, stage1: earnings.stage1, feeder: earnings.feeder });		
+  						}
+  					  });
+  					}
+  				});
+  			}
+  		});
+  	}
   });
 });
 
@@ -281,14 +326,30 @@ router.get('/dashboard', authentificationMiddleware(), function(req, res, next) 
 router.get('/profile', authentificationMiddleware(), function(req, res, next) {
   var currentUser = req.session.passport.user.user_id;
   //get user details to showcase
-  db.query('SELECT * FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
+  db.query('SELECT full_name, code, phone FROM user WHERE user_id = ?', [currentUser], function(err, results, fields){
     if (err) throw err;
     console.log(results)
+    var bio = {
+   	 	fullname: results[0].full_name,
+    	code: results[0].code,
+    	phone: results[0].phone
+    }
     //get from profile table
     db.query('SELECT * FROM profile WHERE user_id = ?', [currentUser], function(err, results, fields){
       if (err) throw err;
       console.log(results)
-      res.render('profile', {title: 'PROFILE'});
+      if ( results.length === 0 ){
+      		var error = "You have not updated your profile yet."
+      		res.render('profile', {title: 'PROFILE', error: error,  phone: bio.phone, code: bio.code, fullname: bio.fullname});
+      }else{
+      		var prof = {
+      		bank: results[0].bank,
+      		bank: results[0].account_name,
+      		bankname: results[0].account_name,
+      		account_number: results[0].account_number
+      }
+      res.render('profile', {title: 'PROFILE', bank: prof.bank, accountname: prof.account_name, accountnumber: prof.account_number, phone: bio.phone, code: bio.code, fullname: bio.fullname});
+      }
     });
   });
 });
@@ -439,8 +500,8 @@ router.post('/login', passport.authenticate('local', {
 router.post('/profile', function(req, res, next) {
   console.log(req.body) 
   req.checkBody('fullname', 'Full Name must be between 8 to 25 characters').len(8,25);
-  req.checkBody('email', 'Email must be between 8 to 25 characters').len(8,25);
-  req.checkBody('email', 'Invalid Email').isEmail();
+  //req.checkBody('email', 'Email must be between 8 to 25 characters').len(8,25);
+ // req.checkBody('email', 'Invalid Email').isEmail();
   req.checkBody('code', 'Country code must not be empty.').notEmpty();
   req.checkBody('account_number', 'Account Number must not be empty.').notEmpty();
   req.checkBody('phone', 'Phone Number must be ten characters').len(10);
@@ -455,7 +516,7 @@ router.post('/profile', function(req, res, next) {
   }
   else {
     var password = req.body.password;
-    var email = req.body.email;
+    //var email = req.body.email;
     var fullname = req.body.fullname;
     var code = req.body.code;
     var phone = req.body.phone;
@@ -471,18 +532,11 @@ router.post('/profile', function(req, res, next) {
       //compare password
       bcrypt.compare(password, hash, function(err, response){
         if(response === false){
-          res.render('profile', { title: 'Profile Update failed', error: "Password is not correct"});
+        error = "Password is not correct";
+          res.render('profile', { title: 'Profile Update failed', error: error});
         }else{
-          //check if email exist
-          db.query('SELECT email FROM user WHERE email = ?', [email], function(err, results, fields){
-            if (err) throw err;
-
-            if (results.length===1){
-              console.log('email exists')
-              res.render('profile', { title: 'Profile Update failed', error: "Email exist in the database"});
-            }else{
               //update user
-              db.query('UPDATE user SET email = ?, full_name = ?, code = ?, phone = ? WHERE user_id = ?', [email, fullname, code, phone, currentUser], function(err, results,fields){
+              db.query('UPDATE user SET full_name = ?, code = ?, phone = ? WHERE user_id = ?', [fullname, code, phone, currentUser], function(err, results,fields){
                 if (err) throw err;
 
                 //check if user has updated profile before now
@@ -498,14 +552,13 @@ router.post('/profile', function(req, res, next) {
                   }else{
                     db.query('UPDATE profile SET bank = ?, account_name = ?, account_number = ? WHERE user_id = ?', [bank, accountName, accountNumber, currentUser], function(err, results,fields){
                       if (err) throw err;
+                      var success = "Profile Updated";
                       console.log(results);
-                      res.render('profile', {title: "UPDATE SUCCESSFUL"});  
+                      res.render('profile', {title: "UPDATE SUCCESSFUL", success: success});  
                     });
                   }
                 });
               });
-            }
-          });
         }
       });
     });
@@ -524,21 +577,21 @@ router.post('/join',  function (req, res, next) {
   db.query('SELECT * FROM pin WHERE serial = ?', [serial], function(err, results, fields){
     if (err) throw err;
     if(results.length === 0){
-      console.log('serial does not exist');
+      var error = 'serial does not exist';
       res.render('join', {title: 'MATRIX UNSUCCESSCUL!'})
     }else{
       const hash = results[0].pin;
-      bcrypt.compare(pin, hash, null, function(err, response){
+      bcrypt.compare(pin, hash, function(err, response){
         if(response === false){
-          console.log('the pin does not exist');
-          res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!'})
+          var error = 'the pin does not exist';
+          res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!', error: error})
         }else{
           var user_pin = results[0].user_id;
           console.log('user in the pin is' + user_pin);
           //make sure no one has used the pin before
           if(user_pin !== null){
-            console.log('pin has been  used already!');
-            res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!'});
+            var error = 'pin has been  used already!'
+            res.render('join', {title: 'MATRIX ENTRANCE UNSUSSESSFUL!', error: error});
           }else{
           //check if the user has joined the matrix before now
           db.query('SELECT user_id FROM pin WHERE user_id = ?', [currentUser], function(err, results, fields){
@@ -580,7 +633,7 @@ router.post('/join',  function (req, res, next) {
 							var paid = results[0].paid;  
 							console.log('the paid value is ' + paid);
 							if(paid == "yes"){
-								db.query('INSERT INTO pin_entrance(user, entered_matrix) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
+								db.query('INSERT INTO pin_entrance(user, amount) VALUES(?,?)',[currentUser, 1], function(err, results, fields){
 								if (err) throw err;
 								matrix.withspon()
 							  });

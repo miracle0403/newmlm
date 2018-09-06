@@ -1,5 +1,11 @@
 {{> spageh}}
 {{> nav}}
+
+{{#if error}}
+	<div class="alert alert-danger">
+    {{error}}
+  </div>
+{{/if}}
 <div class="content">
             <div class="container-fluid">
                 <div class="row">
@@ -78,36 +84,7 @@
                             </div>
                         </div>
 						</div>
-                     <div class="content">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="header">
-                                <h4 class="title">Earning Breakdown</h4>
-                                
-                            </div>
-                            <div class="content table-responsive table-full-width">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <th>Feeder's Stage Bonus</th>
-                                    	<th>Stage 1 Bonus</th>
-                                    	<th>Stage 2 Bonus</th>
-                                    	<th>Stage 3 Bonus</th>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                        	<td>1</td>
-                                        	<td>Dakota Rice</td>
-                                        	<td>$36,738</td>
-                                        	<td>Niger</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                            </div>
-                        </div>
-                    </div>
+                     
 					
 					  <div class="col-md-12">
                         <div class="card">
@@ -117,17 +94,19 @@
 								<h5 class="category">Stage 1</h5>
 								<h5 class="category">Stage 2</h5>
 								<h5 class="category">Stage 3</h5>
+								<h5 class="category">Stage 4</h5>
                             </div>
                             <div class="content">
 							
                                 
                                     <hr>
                                     <div class="stats">
-                                        <i class="ti-reload"></i> Updated 3 minutes ago
+                                        <i class="ti-reload"></i> Updated Now
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                {{> earnings}}
 {{> spagef}}

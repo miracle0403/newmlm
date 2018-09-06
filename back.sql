@@ -1,5 +1,57 @@
 CREATE TABLE pin( user_id INT( 11 ) UNIQUE, serial text NOT NULL, pin varchar( 255 ) NOT NULL, date DATETIME)	;
 
+CREATE TABLE `feeder_tree` (
+	`matrix_id` INT(11) UNIQUE PRIMARY KEY AUTO_INCREMENT NOT NULL,
+	`sponsor` INT(11) NOT NULL,
+	`user` INT(11) NOT NULL,
+	`a` INT(11) NULL DEFAULT NULL,
+	`b` INT(11) NULL DEFAULT NULL,
+	`c` INT(11) NULL DEFAULT NULL,
+	`d` INT(11) NULL DEFAULT NULL
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+
+CREATE TABLE `feeder` (
+	`user` INT(11) NOT NULL,
+	`amount` INT(11) NOT NULL,
+	`lft` INT(11) NOT NULL,
+	`rgt` INT(11) NOT NULL
+);
+
+DELIMITER //
+CREATE PROCEDURE feedercall (user INT(11))
+BEGIN
+
+SELECT parent.user_id FROM user_tree AS node, user_tree AS parent WHERE parent.feeder is not null AND node.lft BETWEEN parent.lft AND parent.rgt AND node.user_id = user ORDER BY parent.lft;
+
+END //
+DELIMITER ;
+
+CREATE TABLE `pin_entrance` (
+	`user_id` INT(11) NOT NULL,
+	`amount` INT(11) NOT NULL,
+	`date` DATETIME NOT NULL
+);
+
+CREATE TABLE `earnings` (
+	`user_id` INT(11) NOT NULL,
+	`feeder` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`stage1` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`stage2` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`stage3` INT(11) UNSIGNED ZEROFILL NOT NULL,
+		`stage4` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`powerbank` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`phone` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`laptop` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`leadership` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`empower` INT(11) UNSIGNED ZEROFILL NOT NULL,
+	`salary` INT(11) UNSIGNED ZEROFILL NOT NULL
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
 
 drop table user_tree;
 CREATE TABLE user_tree( user_id int( 11 )NOT NULL, lft int( 11 ) not null, rgt int ( 11 ) NOT NULL, feeder text, stage1 text, stage2 text, stage3 text)	;
@@ -12,7 +64,7 @@ CREATE TABLE `profile` (
 	`user_id` INT(11) NOT NULL,
 	`bank` TEXT NOT NULL,
 	`account_name` TEXT NOT NULL,
-	`account_number` INT(11) NOT NULL
+	`account_number` VARCHAR(255) NOT NULL
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB

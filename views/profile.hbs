@@ -8,6 +8,20 @@
     
   {{/each}}
 {{/if}}
+
+{{#if error}}
+	<div class="alert alert-danger">
+    {{error}}
+  </div>
+{{/if}}
+
+{{#if success}}
+
+	<div class="alert alert-info">
+    {{success}}
+  </div>
+{{/if}}
+
 <div class="col-md-12">
  <div class="card">
    <div class="header">
@@ -21,16 +35,7 @@
 			 <div class="form-group">
     <label for="fullname">Full Name</label>
   <input type="name" class="form-control" 
-id="fullname" name ="fullname" placeholder="Enter full name" value="" required />
-    </div>
-	</div>
-	<div class="content">
-           <div class="row">
-             <div class="col-md-12">
-			 <div class="form-group">
-    <label for="email">Email</label>
-  <input type="email" class="form-control" 
-id="email" name ="email" value="" required />
+id="fullname" name ="fullname" placeholder="Enter full name" value="{{fullname}}" required />
     </div>
 	</div>
 	<div class="content">
@@ -50,7 +55,7 @@ id="email" name ="email" value="" required />
 			 <div class="form-group">
     <label for="phone">Phone Number</label>
   <input type="phone" class="form-control" 
-id="phone" name ="phone" placeholder="e.g 8012345678" value="" required />
+id="phone" name ="phone" placeholder="e.g 8012345678" value="{{phone}}" required />
     </div>
 	</div>
 	<div class="content">
@@ -74,7 +79,7 @@ id="phone" name ="phone" placeholder="e.g 8012345678" value="" required />
 			 <div class="form-group">
     <label for="ACCOUNTname">Account Name</label>
   <input type="text" class="form-control" 
-id="AccountName" name ="AccountName" placeholder="Enter Account Name" value="" required />
+id="AccountName" name ="AccountName" placeholder="Enter Account Name" value="{{accountname}}" required />
     </div>
 	</div>
 	<div class="content">
@@ -83,7 +88,7 @@ id="AccountName" name ="AccountName" placeholder="Enter Account Name" value="" r
 			 <div class="form-group">
     <label for="number">Account Number</label>
   <input type="number" class="form-control" 
-id="account_number" name ="account_number" placeholder="Enter your account number" value="" required />
+id="account_number" name ="account_number" placeholder="Enter your account number" value="{{accountnumber}}" required />
     </div>
 	</div>
 	<div class="content">

@@ -35,6 +35,12 @@ app.set('view engine', 'hbs');
 var messageTemplate = fs.readFileSync(__dirname + '/views/messages.hbs', 'utf8');
 hbs.registerPartial('message', messageTemplate); 
 
+var earningsTemplate = fs.readFileSync(__dirname + '/views/earnings.hbs', 'utf8');
+hbs.registerPartial('earnings', earningsTemplate); 
+
+var noearnTemplate = fs.readFileSync(__dirname + '/views/noearn.hbs', 'utf8');
+hbs.registerPartial('noearn', noearnTemplate); 
+
 var mainhTemplate = fs.readFileSync(__dirname + '/views/mainh.hbs', 'utf8');
 hbs.registerPartial('mainh', mainhTemplate); 
 
